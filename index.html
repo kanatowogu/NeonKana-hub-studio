@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23d8d5ce'/><circle cx='16' cy='16' r='9' fill='none' stroke='%236b242b' stroke-width='2.5'/></svg>" />
+  <title>BNBU 二期书院区跨校区单轨枢纽 · Option A 概念白模共创台</title>
+  <style>
+    :root {
+      --bg: #eceae4;
+      --panel: rgba(247, 245, 240, 0.92);
+      --border: rgba(42, 46, 51, 0.14);
+      --ink: #22252a;
+      --muted: #656a70;
+      --accent: #6b242b;
+      --accent-soft: rgba(107, 36, 43, 0.10);
+      --sage: #3d5e58;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 12.5px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #viewport {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Top-left architectural title badge */
+    .title-card {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      max-width: 350px;
+      pointer-events: auto;
+      z-index: 10;
+    }
+    .title-kicker {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .title-main {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      line-height: 1.3;
+    }
+    .title-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.45;
+    }
+
+    /* Bottom-left datum & scale HUD */
+    .hud-bar {
+      position: fixed;
+      bottom: 16px;
+      left: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      padding: 8px 13px;
+      font-size: 11px;
+      color: var(--muted);
+      z-index: 10;
+    }
+    .hud-bar strong { color: var(--ink); font-weight: 600; }
+    .hud-sep { width: 1px; height: 12px; background: var(--border); }
+
+    /* Right control sidebar */
+    .panel {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      bottom: 16px;
+      width: 300px;
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 12;
+      transition: transform 0.25s ease;
+    }
+    .panel.collapsed {
+      transform: translateX(calc(100% + 20px));
+    }
+
+    .panel-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .panel-header span {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .panel-body {
+      padding: 12px 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .sec-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 7px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .btn-grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 5px;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--ink);
+      padding: 6.5px 8px;
+      font-size: 11.5px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.14s ease;
+      text-align: center;
+    }
+    button:hover {
+      background: #ffffff;
+      border-color: rgba(42, 46, 51, 0.35);
+    }
+    button.active {
+      background: var(--ink);
+      color: #f7f5f0;
+      border-color: var(--ink);
+      font-weight: 600;
+    }
+    button.accent-active {
+      background: var(--accent);
+      color: #f7f5f0;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+    button.sage-active {
+      background: var(--sage);
+      color: #f7f5f0;
+      border-color: var(--sage);
+      font-weight: 600;
+    }
+
+    .slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11.5px;
+    }
+    .slider-val {
+      font-variant-numeric: tabular-nums;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+      height: 4px;
+    }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 5px 0;
+      font-size: 11.5px;
+      cursor: pointer;
+    }
+    .check-row input { accent-color: var(--accent); cursor: pointer; }
+
+    .divider { height: 1px; background: var(--border); }
+
+    .note-box {
+      background: rgba(42, 46, 51, 0.04);
+      border-left: 2.5px solid var(--accent);
+      padding: 7px 9px;
+      font-size: 11px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .toggle-panel-btn {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 11;
+      padding: 7px 11px;
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three/three.module.min.js",
+        "three/addons/controls/OrbitControls.js": "./vendor/three/OrbitControls.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <canvas id="viewport"></canvas>
+
+  <div class="title-card">
+    <div class="title-kicker">CCM3123 Group Project · Option A · V1</div>
+    <div class="title-main">BNBU 二期书院区跨校区单轨枢纽</div>
+    <div class="title-sub">SAFEGE 悬挂式双线单轨 · 2F 闭合环廊 + 6 向连桥 · 3F 斜穿主车站与安藤极简白模</div>
+  </div>
+
+  <div class="hud-bar">
+    <span><strong>标高</strong> 1F ±0.0 / 2F +4.8 / 3F +9.6 / 箱梁 +13.1m</span>
+    <span class="hud-sep"></span>
+    <span><strong>光影</strong> 55° 太阳光 · #D8D5CE</span>
+    <span class="hud-sep"></span>
+    <span><strong>交互</strong> 左键旋转 · 右键平移 · 滚轮缩放</span>
+  </div>
+
+  <button id="openPanelBtn" class="toggle-panel-btn" style="display:none;">展开控制面板</button>
+
+  <aside id="controlPanel" class="panel">
+    <div class="panel-header">
+      <span>共创控制台 · White Model</span>
+      <button id="closePanelBtn" style="padding:2px 7px;font-size:11px;">收起</button>
+    </div>
+    <div class="panel-body">
+
+      <!-- 1. Preset Camera Flythroughs -->
+      <section>
+        <div class="sec-title"><span>预设穿梭机位</span><span>Camera</span></div>
+        <div class="btn-grid">
+          <button data-cam="aerial" class="active">主鸟瞰 3/4</button>
+          <button data-cam="plan">正交总平面</button>
+          <button data-cam="courtyard">中庭仰视</button>
+          <button data-cam="platform">3F 站台内视</button>
+          <button data-cam="canyon">穿隙隔音视角</button>
+          <button data-cam="bridge2f">2F 环廊连桥</button>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 1b. Existing Phase II Colleges Display Mode -->
+      <section>
+        <div class="sec-title"><span>二期既有书院建筑群</span><span>Context</span></div>
+        <div class="btn-grid-3">
+          <button id="btnCtxGhost" class="active">幽灵体块</button>
+          <button id="btnCtxWire">仅地面线框</button>
+          <button id="btnCtxHide">完全隐藏</button>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 2. Acoustic Variant Toggle (A1 vs A2) -->
+      <section>
+        <div class="sec-title"><span>差分方案 1 · 隔音设施造型</span><span>A1 / A2</span></div>
+        <div class="btn-grid">
+          <button id="btnA1" class="accent-active">A1 折面半开敞</button>
+          <button id="btnA2">A2 全包隔音罩</button>
+        </div>
+        <div id="acousticDesc" class="note-box" style="margin-top:7px;">
+          A1：安藤折面清水混凝土声屏障，顶部留 1.4m 连续采光缝，侧向遮挡宿舍视线与噪声。
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 3. 1:100 Physical Model Slice Box Toggle (S1 vs S2) -->
+      <section>
+        <div class="sec-title"><span>差分方案 2 · 1:100 白模切片框</span><span>30×30m</span></div>
+        <div class="btn-grid-3">
+          <button id="btnSliceOff" class="active">关闭</button>
+          <button id="btnSliceS1">S1 枢纽核心</button>
+          <button id="btnSliceS2">S2 穿隙阈值</button>
+        </div>
+        <label class="check-row" style="margin-top:5px;">
+          <span>按当前切片框实时裁切实体（1:100 预览）</span>
+          <input type="checkbox" id="chkClipSlice" />
+        </label>
+        <div id="sliceDesc" class="note-box">
+          1:100 实体白模底板 30cm×30cm = 真实 30m×30m，可切换 S1/S2 对比展示核心。
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 4. Shell/Acoustic Peel + 2F/3F Explode Sliders -->
+      <section style="display:flex;flex-direction:column;gap:11px;">
+        <div class="sec-title"><span>空间解构与透视</span><span>Deconstruct</span></div>
+
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>外壳 / 隔音罩剥离</span>
+            <span id="valPeel" class="slider-val">0%</span>
+          </div>
+          <input type="range" id="rngPeel" min="0" max="100" value="0" />
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>2F / 3F 垂直爆炸展开</span>
+            <span id="valExplode" class="slider-val">0%</span>
+          </div>
+          <input type="range" id="rngExplode" min="0" max="100" value="0" />
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 5. Real-Time Architectural Section Slider -->
+      <section style="display:flex;flex-direction:column;gap:8px;">
+        <div class="sec-title"><span>实时建筑剖面</span><span>Section Cut</span></div>
+        <div class="btn-grid-3">
+          <button id="btnSecOff" class="active">关闭</button>
+          <button id="btnSecTrans">横向剖面</button>
+          <button id="btnSecLong">纵向剖面</button>
+        </div>
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>剖切面位置</span>
+            <span id="valSecPos" class="slider-val">0.0 m</span>
+          </div>
+          <input type="range" id="rngSecPos" min="-55" max="55" step="0.5" value="0" disabled />
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 6. White Model vs Sketch Color Mode + Reset -->
+      <section style="display:flex;flex-direction:column;gap:8px;">
+        <div class="sec-title"><span>材质表达模式</span><span>Style</span></div>
+        <div class="btn-grid">
+          <button id="btnMatWhite" class="active">安藤纯净白模</button>
+          <button id="btnMatSketch">手绘分层色码</button>
+        </div>
+        <button id="btnReset" style="margin-top:2px;">重置全部视图与参数</button>
+      </section>
+
+    </div>
+  </aside>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { createHubScene, localToWorld } from './scene_builder.js';
+
+    // --- Renderer Setup (SKILL.md ACESFilmicToneMapping + PCFSoftShadowMap 4096) ---
+    const canvas = document.getElementById('viewport');
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      powerPreference: 'high-performance',
+      preserveDrawingBuffer: true,
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.04;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.localClippingEnabled = true;
+
+    // --- Scene & Atmosphere ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xeceae4);
+    scene.fog = new THREE.Fog(0xeceae4, 195, 360);
+
+    // --- Camera & OrbitControls ---
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.4, 700);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.065;
+    controls.maxPolarAngle = Math.PI / 2 - 0.02;
+    controls.minDistance = 8;
+    controls.maxDistance = 240;
+
+    // --- Lighting Rig (SKILL.md §2.2: 55° Elevation Directional Sun + Soft Hemisphere) ---
+    const hemiLight = new THREE.HemisphereLight(0xf6f8fb, 0xd8d2c6, 0.78);
+    scene.add(hemiLight);
+
+    const sunElev = THREE.MathUtils.degToRad(55);
+    const sunAzim = THREE.MathUtils.degToRad(38);
+    const sunDist = 140;
+    const sunLight = new THREE.DirectionalLight(0xfffaf2, 1.55);
+    sunLight.position.set(
+      Math.cos(sunElev) * Math.cos(sunAzim) * sunDist,
+      Math.sin(sunElev) * sunDist,
+      Math.cos(sunElev) * Math.sin(sunAzim) * sunDist
+    );
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.set(4096, 4096);
+    sunLight.shadow.camera.near = 20;
+    sunLight.shadow.camera.far = 320;
+    const d = 115;
+    sunLight.shadow.camera.left = -d;
+    sunLight.shadow.camera.right = d;
+    sunLight.shadow.camera.top = d;
+    sunLight.shadow.camera.bottom = -d;
+    sunLight.shadow.bias = -0.00035;
+    sunLight.shadow.normalBias = 0.04;
+    scene.add(sunLight);
+
+    // Subtle cool rim fill to keep shadowed concrete reveals crisp
+    const rimLight = new THREE.DirectionalLight(0xdce6f0, 0.35);
+    rimLight.position.set(-90, 45, -80);
+    scene.add(rimLight);
+
+    // --- Build Parametric Hub Model ---
+    const hub = createHubScene();
+    scene.add(hub.root);
+
+    // --- Camera Presets (Smooth Animated Flythrough) ---
+    const CAM_PRESETS = {
+      aerial: {
+        pos: new THREE.Vector3(78, 62, 74),
+        target: new THREE.Vector3(0, 8, 0),
+      },
+      plan: {
+        pos: new THREE.Vector3(0, 162, 0.01),
+        target: new THREE.Vector3(0, 4, 0),
+      },
+      courtyard: {
+        pos: localToWorld(-14, 2.2, -19),
+        target: localToWorld(4, 11.5, 4),
+      },
+      platform: {
+        pos: localToWorld(-22, 11.35, -5.1),
+        target: localToWorld(8, 12.0, -2.0),
+      },
+      canyon: {
+        pos: localToWorld(-74, 23, 28),
+        target: localToWorld(-34, 11.5, 0),
+      },
+      bridge2f: {
+        pos: localToWorld(-24, 9.2, -34),
+        target: localToWorld(-18, 6.2, -24),
+      },
+    };
+
+    let camAnim = null;
+    function flyTo(presetKey, instant = false) {
+      const p = CAM_PRESETS[presetKey];
+      if (!p) return;
+      document.querySelectorAll('[data-cam]').forEach((b) => {
+        b.classList.toggle('active', b.dataset.cam === presetKey);
+      });
+      if (instant) {
+        camAnim = null;
+        camera.position.copy(p.pos);
+        controls.target.copy(p.target);
+        controls.update();
+        return;
+      }
+      camAnim = {
+        startTime: performance.now(),
+        duration: 750,
+        fromPos: camera.position.clone(),
+        toPos: p.pos.clone(),
+        fromTarget: controls.target.clone(),
+        toTarget: p.target.clone(),
+      };
+    }
+
+    flyTo('aerial', true);
+
+    // --- UI Bindings ---
+    document.querySelectorAll('[data-cam]').forEach((btn) => {
+      btn.addEventListener('click', () => flyTo(btn.dataset.cam));
+    });
+
+    const btnCtxGhost = document.getElementById('btnCtxGhost');
+    const btnCtxWire = document.getElementById('btnCtxWire');
+    const btnCtxHide = document.getElementById('btnCtxHide');
+    function setContextMode(mode) {
+      hub.state.contextMode = mode;
+      btnCtxGhost.classList.toggle('active', mode === 'ghost');
+      btnCtxWire.classList.toggle('active', mode === 'wireframe');
+      btnCtxHide.classList.toggle('active', mode === 'hidden');
+      hub.applyState();
+    }
+    btnCtxGhost.addEventListener('click', () => setContextMode('ghost'));
+    btnCtxWire.addEventListener('click', () => setContextMode('wireframe'));
+    btnCtxHide.addEventListener('click', () => setContextMode('hidden'));
+
+    const btnA1 = document.getElementById('btnA1');
+    const btnA2 = document.getElementById('btnA2');
+    const acousticDesc = document.getElementById('acousticDesc');
+    function setAcoustic(variant) {
+      hub.state.acousticVariant = variant;
+      btnA1.classList.toggle('accent-active', variant === 'A1');
+      btnA2.classList.toggle('accent-active', variant === 'A2');
+      acousticDesc.textContent = variant === 'A1'
+        ? 'A1：安藤折面清水混凝土声屏障，顶部留 1.4m 连续采光缝，侧向遮挡宿舍视线与噪声。'
+        : 'A2：连续全包倒角穿孔隔音罩，嵌半透明隔声玻璃观察带，夜间宿舍降噪最彻底。';
+      hub.applyState();
+    }
+    btnA1.addEventListener('click', () => setAcoustic('A1'));
+    btnA2.addEventListener('click', () => setAcoustic('A2'));
+
+    const btnSliceOff = document.getElementById('btnSliceOff');
+    const btnSliceS1 = document.getElementById('btnSliceS1');
+    const btnSliceS2 = document.getElementById('btnSliceS2');
+    const chkClipSlice = document.getElementById('chkClipSlice');
+    const sliceDesc = document.getElementById('sliceDesc');
+
+    function setSlice(mode) {
+      hub.state.sliceMode = mode;
+      btnSliceOff.classList.toggle('active', mode === 'OFF');
+      btnSliceS1.classList.toggle('accent-active', mode === 'S1');
+      btnSliceS2.classList.toggle('sage-active', mode === 'S2');
+      if (mode === 'OFF') {
+        chkClipSlice.checked = false;
+        hub.state.clipToSlice = false;
+        sliceDesc.textContent = '1:100 实体白模底板 30cm×30cm = 真实 30m×30m，可切换 S1/S2 对比展示核心。';
+      } else if (mode === 'S1') {
+        sliceDesc.textContent = 'S1 枢纽核心切片（30m×30m）：囊括 3F 车站中段 + SAFEGE 列车 + 2F 环廊 + 东北圆柱/西南方盒双交通核。';
+      } else {
+        sliceDesc.textContent = 'S2 穿隙阈值切片（30m×30m）：聚焦 3F 车站西北端头 + 隔音屏障起始段 + 2F 环廊与书院放射连桥接驳口。';
+      }
+      hub.applyState();
+    }
+    btnSliceOff.addEventListener('click', () => setSlice('OFF'));
+    btnSliceS1.addEventListener('click', () => setSlice('S1'));
+    btnSliceS2.addEventListener('click', () => setSlice('S2'));
+    chkClipSlice.addEventListener('change', () => {
+      if (chkClipSlice.checked && hub.state.sliceMode === 'OFF') setSlice('S1');
+      hub.state.clipToSlice = chkClipSlice.checked;
+      hub.applyState();
+    });
+
+    const rngPeel = document.getElementById('rngPeel');
+    const valPeel = document.getElementById('valPeel');
+    rngPeel.addEventListener('input', () => {
+      hub.state.peel = Number(rngPeel.value) / 100;
+      valPeel.textContent = `${rngPeel.value}%`;
+      hub.applyState();
+    });
+
+    const rngExplode = document.getElementById('rngExplode');
+    const valExplode = document.getElementById('valExplode');
+    rngExplode.addEventListener('input', () => {
+      hub.state.explode = Number(rngExplode.value) / 100;
+      valExplode.textContent = `${rngExplode.value}%`;
+      hub.applyState();
+    });
+
+    const btnSecOff = document.getElementById('btnSecOff');
+    const btnSecTrans = document.getElementById('btnSecTrans');
+    const btnSecLong = document.getElementById('btnSecLong');
+    const rngSecPos = document.getElementById('rngSecPos');
+    const valSecPos = document.getElementById('valSecPos');
+
+    function setSection(mode) {
+      hub.state.sectionEnabled = mode !== 'OFF';
+      if (mode !== 'OFF') hub.state.sectionAxis = mode;
+      btnSecOff.classList.toggle('active', mode === 'OFF');
+      btnSecTrans.classList.toggle('accent-active', mode === 'transverse');
+      btnSecLong.classList.toggle('accent-active', mode === 'longitudinal');
+      rngSecPos.disabled = mode === 'OFF';
+      hub.applyState();
+    }
+    btnSecOff.addEventListener('click', () => setSection('OFF'));
+    btnSecTrans.addEventListener('click', () => setSection('transverse'));
+    btnSecLong.addEventListener('click', () => setSection('longitudinal'));
+    rngSecPos.addEventListener('input', () => {
+      hub.state.sectionPos = Number(rngSecPos.value);
+      valSecPos.textContent = `${Number(rngSecPos.value).toFixed(1)} m`;
+      hub.applyState();
+    });
+
+    const btnMatWhite = document.getElementById('btnMatWhite');
+    const btnMatSketch = document.getElementById('btnMatSketch');
+    function setColorMode(mode) {
+      hub.state.colorMode = mode;
+      btnMatWhite.classList.toggle('active', mode === 'white');
+      btnMatSketch.classList.toggle('accent-active', mode === 'sketch');
+      hub.applyState();
+    }
+    btnMatWhite.addEventListener('click', () => setColorMode('white'));
+    btnMatSketch.addEventListener('click', () => setColorMode('sketch'));
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+      rngPeel.value = 0; valPeel.textContent = '0%'; hub.state.peel = 0;
+      rngExplode.value = 0; valExplode.textContent = '0%'; hub.state.explode = 0;
+      rngSecPos.value = 0; valSecPos.textContent = '0.0 m'; hub.state.sectionPos = 0;
+      setAcoustic('A1');
+      setContextMode('ghost');
+      setSlice('OFF');
+      setSection('OFF');
+      setColorMode('white');
+      flyTo('aerial');
+    });
+
+    // Panel collapse
+    const panel = document.getElementById('controlPanel');
+    const openPanelBtn = document.getElementById('openPanelBtn');
+    document.getElementById('closePanelBtn').addEventListener('click', () => {
+      panel.classList.add('collapsed');
+      openPanelBtn.style.display = 'block';
+    });
+    openPanelBtn.addEventListener('click', () => {
+      panel.classList.remove('collapsed');
+      openPanelBtn.style.display = 'none';
+    });
+
+    // Resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Render loop
+    function animate(now) {
+      requestAnimationFrame(animate);
+      if (camAnim) {
+        const t = Math.min(1, (now - camAnim.startTime) / camAnim.duration);
+        const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        camera.position.lerpVectors(camAnim.fromPos, camAnim.toPos, ease);
+        controls.target.lerpVectors(camAnim.fromTarget, camAnim.toTarget, ease);
+        if (t >= 1) camAnim = null;
+      }
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    requestAnimationFrame(animate);
+
+    // Headless Verification Hook
+    window.__STUDIO__ = {
+      flyTo: (k) => flyTo(k, true),
+      setContextMode,
+      setAcoustic,
+      checkCollisions: () => hub.checkCollisions(),
+      setSlice,
+      setColorMode,
+      setSection,
+      setPeel: (v) => { rngPeel.value = Math.round(v * 100); valPeel.textContent = `${rngPeel.value}%`; hub.state.peel = v; hub.applyState(); },
+      setExplode: (v) => { rngExplode.value = Math.round(v * 100); valExplode.textContent = `${rngExplode.value}%`; hub.state.explode = v; hub.applyState(); },
+      setSectionPos: (v) => { rngSecPos.value = v; valSecPos.textContent = `${v.toFixed(1)} m`; hub.state.sectionPos = v; hub.applyState(); },
+      setClipToSlice: (b) => { chkClipSlice.checked = b; hub.state.clipToSlice = b; hub.applyState(); },
+      hideUI: (b) => {
+        panel.style.display = b ? 'none' : 'flex';
+      },
+      renderOnce: () => { controls.update(); renderer.render(scene, camera); },
+    };
+  </script>
+</body>
+</html>
