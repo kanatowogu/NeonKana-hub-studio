@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 
 /**
- * BNBU Phase II Residential College Cluster — Option A Suspended Monorail Hub (V2)
+ * BNBU Phase II Residential College Cluster — Option A Suspended Monorail Hub (V3)
  * Calibrated from Real North-Up Satellite Map:
  *   - 2F Closed Ring Corridor Diameter = 100.0m (R = 50.0m)
  *   - 6 Inward-Opening U-Shaped Colleges (6-fold symmetry, 65.5m radial dormitory wings, outer connecting bar)
  *   - Existing SE Circular Pavilion (R = 28.5m, θ = +67°)
  *   - Raised 3F SAFEGE Station (+11.60m platform, +19.15m lofty roof)
- *   - Differential B1 (Enclosed Box) vs B2 (Open 3-Segment Inverted-U Concrete Portals + Twin Split Roofs)
+ *   - Differential B1 (Enclosed Box) vs B2 (7 Square-Column Portals) vs B3 (4 Wide Thin Folded-Slab Portals [DEFAULT])
  *   - Enriched Courtyard (Sunken Reflecting Pool Terraces, Grand Stairs/Ramps, 1F Bike Slatted Galleries)
  */
 
@@ -50,7 +50,7 @@ export function worldToTrackLocal(v) {
 
 export function createHubScene() {
   const root = new THREE.Group();
-  root.name = 'BNBU_OptionA_Hub_V2_Root';
+  root.name = 'BNBU_OptionA_Hub_V3_Root';
 
   // --- Shared Clipping Planes ---
   const sectionPlane = new THREE.Plane(new THREE.Vector3(-PERP_NE.x, 0, -PERP_NE.z), 999);
@@ -164,8 +164,10 @@ export function createHubScene() {
     cores: new THREE.Group(),             // 03_Vertical_Cores
     station3F: new THREE.Group(),         // 04_Station3F_Platforms
     stationB1: new THREE.Group(),         // 04a_Station_B1_EnclosedBox
-    stationB2: new THREE.Group(),         // 04b_Station_B2_OpenPortals (non-peelable portals)
-    stationB2Roof: new THREE.Group(),     // 04c_Station_B2_TwinRoof (peelable roof plates)
+    stationB2: new THREE.Group(),         // 04b_Station_B2_OpenPortals (7 square-column portals)
+    stationB2Roof: new THREE.Group(),     // 04c_Station_B2_TwinRoof
+    stationB3: new THREE.Group(),         // 04d_Station_B3_FlatFoldedPortals (4 wide thin inverted-U)
+    stationB3Roof: new THREE.Group(),     // 04e_Station_B3_TwinRoof
     safegeTracks: new THREE.Group(),      // 05_SAFEGE_Tracks_Trains
     acousticA1: new THREE.Group(),        // 06a_Acoustic_A1_Baffles
     acousticA2: new THREE.Group(),        // 06b_Acoustic_A2_Tunnel
@@ -186,6 +188,8 @@ export function createHubScene() {
   const b1Local = makeTrackAlignedGroup('B1_Local');
   const b2Local = makeTrackAlignedGroup('B2_Local');
   const b2RoofLocal = makeTrackAlignedGroup('B2_Roof_Local');
+  const b3Local = makeTrackAlignedGroup('B3_Local');
+  const b3RoofLocal = makeTrackAlignedGroup('B3_Roof_Local');
   const tracksLocal = makeTrackAlignedGroup('Tracks_Local');
   const a1Local = makeTrackAlignedGroup('A1_Local');
   const a2Local = makeTrackAlignedGroup('A2_Local');
@@ -195,6 +199,8 @@ export function createHubScene() {
   groups.stationB1.add(b1Local);
   groups.stationB2.add(b2Local);
   groups.stationB2Roof.add(b2RoofLocal);
+  groups.stationB3.add(b3Local);
+  groups.stationB3Roof.add(b3RoofLocal);
   groups.safegeTracks.add(tracksLocal);
   groups.acousticA1.add(a1Local);
   groups.acousticA2.add(a2Local);
@@ -213,13 +219,11 @@ export function createHubScene() {
   groundBoard.receiveShadow = true;
   groups.siteBase.add(groundBoard);
 
-  // Central Ando Sunken Reflecting Pool & Stepped Amphitheater Terraces (R=26m -> R=19m)
   const poolBasin = addArchMesh(groups.siteBase, new THREE.CylinderGeometry(19.5, 19.5, 0.08, 64), matWater, {
     castShadow: false, receiveShadow: true, edges: false,
   });
   poolBasin.position.y = 0.04;
 
-  // Concentric stepped minimalist concrete terrace rings around the reflecting pool
   [
     { rIn: 19.5, rOut: 21.8, h: 0.22 },
     { rIn: 21.8, rOut: 24.4, h: 0.42 },
@@ -236,7 +240,6 @@ export function createHubScene() {
     m.position.y = h;
   });
 
-  // Minimalist rectilinear concrete stepping causeway crossing the water basin along the track axis
   const causeway = addArchMesh(
     groups.siteBase,
     new THREE.BoxGeometry(54.0, 0.26, 4.4),
@@ -246,7 +249,6 @@ export function createHubScene() {
   causeway.position.y = 0.20;
   causeway.rotation.y = -AXIS_RAD;
 
-  // Subtle geometric lawn pad under outer courtyard
   const lawnRingShape = new THREE.Shape();
   lawnRingShape.absarc(0, 0, 44.5, 0, Math.PI * 2, false);
   const lawnHole = new THREE.Path();
@@ -277,14 +279,12 @@ export function createHubScene() {
   }
 
   const yLine = 0.04;
-  // Concentric site lines: central lawn (R=45), 1F inner walkway (R=54.5 & 58), outer vehicular ring (R=135 & 143)
   addCircleLine(groups.siteBase, 45.0, yLine, matLineMinor, 96);
   addCircleLine(groups.contextFootprints, 54.5, yLine, matLineMajor, 128);
   addCircleLine(groups.contextFootprints, 58.0, yLine, matLineMajor, 128);
   addCircleLine(groups.contextFootprints, 135.0, yLine, matLineMinor, 128);
   addCircleLine(groups.contextFootprints, 143.0, yLine, matLineMinor, 128);
 
-  // Existing SE Circular Courtyard Pavilion (Satellite Map: SE quadrant R=28.5m, θ=+67°, Ø17.6m, H=7.2m)
   const pavRad = THREE.MathUtils.degToRad(67);
   const pavX = Math.cos(pavRad) * 28.5;
   const pavZ = Math.sin(pavRad) * 28.5;
@@ -303,19 +303,15 @@ export function createHubScene() {
   pavTop.position.y = 4.7;
   groups.contextMassing.add(pavMass);
 
-  // Landmarks matching real satellite map:
-  // 1) North (12:00) Lakefront Spiral Student Center (x ≈ +18, z ≈ -162)
   [24, 16, 8].forEach((r) => {
     const c = addCircleLine(groups.contextFootprints, r, yLine, matLineMinor, 48);
     c.position.set(18, 0, -162);
   });
-  // 2) South (6:00) Circular Entrance Plaza (x ≈ -4, z ≈ +152)
   [16, 9].forEach((r) => {
     const c = addCircleLine(groups.contextFootprints, r, yLine, matLineMinor, 48);
     c.position.set(-4, 0, 152);
   });
 
-  // Track ground centerline projection
   const axisLine = new THREE.Line(
     new THREE.BufferGeometry().setFromPoints([localToWorld(-165, yLine, 0), localToWorld(165, yLine, 0)]),
     new THREE.LineDashedMaterial({ color: 0x6b242b, dashSize: 3.0, gapSize: 1.8, transparent: true, opacity: 0.45 })
@@ -323,19 +319,18 @@ export function createHubScene() {
   axisLine.computeLineDistances();
   groups.siteBase.add(axisLine);
 
-  // --- Build 6 Center-Symmetric Inward-Opening U-Shaped Colleges (65.5m radial wings!) ---
+  // 6 Center-Symmetric Inward-Opening U-Shaped Colleges (65.5m radial wings)
   const WING_R0 = 63.0;
-  const WING_LEN = 65.5;   // Exact user-locked dormitory length: 65.5m (R = 63.0m to 128.5m)
+  const WING_LEN = 65.5;
   const WING_W = 13.0;
-  const WING_H = 24.0;     // 7-story real scale
-  const WING_HALF_ANGLE = 15.0; // Two wings at θ_c ± 15° (12 radial wings spaced every 30° around circle!)
+  const WING_H = 24.0;
+  const WING_HALF_ANGLE = 15.0;
 
   COLLEGE_ANGLES_DEG.forEach((deg, idx) => {
     const radCenter = THREE.MathUtils.degToRad(deg);
     const fpGroup = new THREE.Group();
     const massGroup = new THREE.Group();
 
-    // 1. Twin 65.5m Radial 7-Story Dormitory Wings (opening INWARD toward central lawn!)
     [-1, 1].forEach((side) => {
       const wingDeg = deg + side * WING_HALF_ANGLE;
       const wingRad = THREE.MathUtils.degToRad(wingDeg);
@@ -401,7 +396,6 @@ export function createHubScene() {
       });
     });
 
-    // 2. Outer Connecting Main Building Bar (AT THE OUTER PERIMETER -> closes back of U so U opens INWARD!)
     const barGroupFP = new THREE.Group();
     barGroupFP.rotation.y = -radCenter;
     const barGroupMass = new THREE.Group();
@@ -429,7 +423,6 @@ export function createHubScene() {
     );
     barMesh.position.set(barRIn + barDepth / 2, barH / 2, 0);
 
-    // 3. Inner Curved/Faceted 2F Activity Podium & 1F Covered Walkway facing Central Lawn
     const podR0 = 58.0;
     const podDepth = 5.5;
     const podHalfW = 19.5;
@@ -482,12 +475,12 @@ export function createHubScene() {
   });
 
   // =========================================================================
-  // 02. PURPLE 2F CLOSED RING CORRIDOR (D = 100m, R = 50m) + 6 BRIDGES + BIKE GALLERIES + GRAND STAIRS
+  // 02. PURPLE 2F CLOSED RING CORRIDOR (D = 100m, R = 50m) + BRIDGES + BIKE + STAIRS
   // =========================================================================
-  const R_RING = 50.0; // User-locked Diameter = 100.0m!
+  const R_RING = 50.0;
   const RING_W = 5.2;
-  const RING_INNER = R_RING - RING_W / 2; // 47.4
-  const RING_OUTER = R_RING + RING_W / 2; // 52.6
+  const RING_INNER = R_RING - RING_W / 2;
+  const RING_OUTER = R_RING + RING_W / 2;
   const SLAB_2F_H = 0.48;
 
   const ringShape = new THREE.Shape();
@@ -526,7 +519,6 @@ export function createHubScene() {
     col.position.set(Math.cos(a) * R_RING, (DATUMS.F2 - SLAB_2F_H) / 2, Math.sin(a) * R_RING);
   }
 
-  // 6 Radial Bridges + 12 Under-Ring Bicycle/E-Bike Slatted Parking Galleries
   COLLEGE_ANGLES_DEG.forEach((deg) => {
     const bg = new THREE.Group();
     const rad = THREE.MathUtils.degToRad(deg);
@@ -579,7 +571,6 @@ export function createHubScene() {
     groups.ring2F.add(bg);
   });
 
-  // Sculptural Outdoor Grand Stairs & Barrier-Free Ramps descending from 2F Ring into Central Courtyard
   [-105, 115].forEach((deg) => {
     const sg = new THREE.Group();
     sg.rotation.y = -THREE.MathUtils.degToRad(deg);
@@ -615,7 +606,6 @@ export function createHubScene() {
   // =========================================================================
   const CORE_H = DATUMS.LINTEL_TOP + 0.45; // 19.60m
 
-  // --- 3A. NE Cylindrical Vertical Core ---
   const cylGroup = new THREE.Group();
   cylGroup.position.set(6.0, 0, -16.2);
 
@@ -669,7 +659,6 @@ export function createHubScene() {
 
   coresLocal.add(cylGroup);
 
-  // --- 3B. SW Rectangular Concrete Box Core ---
   const boxGroup = new THREE.Group();
   boxGroup.position.set(-8.0, 0, 13.6);
 
@@ -711,7 +700,7 @@ export function createHubScene() {
   coresLocal.add(boxGroup);
 
   // =========================================================================
-  // 04. RAISED 3F MAIN STATION (LENGTH 96m, WIDTH 16.4m) + B1 vs B2 VARIANTS
+  // 04. RAISED 3F MAIN STATION (96m x 16.4m) + B1 vs B2 vs B3 VARIANTS
   // =========================================================================
   const ST_LEN = 96.0;
   const ST_W = 16.4;
@@ -740,7 +729,12 @@ export function createHubScene() {
     tieBeam.position.set(s, DATUMS.F3 - SLAB_3F_H - 0.36, 0);
   }
 
-  // --- VARIANT B2 (DEFAULT): OPEN 3-SEGMENT ORTHOGONAL INVERTED-U CONCRETE PORTALS + TWIN ROOFS ---
+  const ROOF_LEN = ST_LEN + 8.0; // 104m
+  const ROOF_PLATE_W = 8.8;
+  const ROOF_SLAB_T = 0.50;
+  const SLIT_HALF = 0.55; // 1.10m central longitudinal light slit
+
+  // --- VARIANT B2: 7 SQUARE-COLUMN RECTILINEAR INVERTED-U PORTALS + TWIN ROOFS ---
   const PORTAL_BAYS = [-42, -28, -14, 0, 14, 28, 42];
   const PORTAL_THICK_S = 1.35;
   const PORTAL_LEG_W = 1.15;
@@ -772,11 +766,6 @@ export function createHubScene() {
     });
   });
 
-  const ROOF_LEN = ST_LEN + 8.0; // 104m
-  const ROOF_PLATE_W = 8.8;
-  const ROOF_SLAB_T = 0.50;
-  const SLIT_HALF = 0.55; // 1.10m central longitudinal light slit
-
   const roofNE = addArchMesh(b2RoofLocal, new THREE.BoxGeometry(ROOF_LEN, ROOF_SLAB_T, ROOF_PLATE_W), matShellRoof);
   roofNE.position.set(0, DATUMS.ROOF_LOW + ROOF_SLAB_T / 2, -(SLIT_HALF + ROOF_PLATE_W / 2));
 
@@ -785,6 +774,55 @@ export function createHubScene() {
 
   PORTAL_BAYS.forEach((sBay) => {
     const spacer = addArchMesh(b2RoofLocal, new THREE.BoxGeometry(PORTAL_THICK_S, 0.50, 7.6), matPortalConcrete);
+    spacer.position.set(sBay, DATUMS.ROOF_LOW + 0.25, SLIT_HALF + 4.2);
+  });
+
+  // --- VARIANT B3 (V3 DEFAULT): 4 WIDE THIN FOLDED-SLAB INVERTED-U CONCRETE PORTALS + TWIN ROOFS ---
+  const B3_BAYS = [-39, -17, 17, 39];
+  const B3_WIDTH_S = 8.4;   // Broad flat folded-ribbon width along track
+  const B3_THICK = 0.62;    // Razor-thin concrete wall/slab thickness (13.5:1)
+  const B3_SPAN_OUT = 19.0; // Outer transverse span
+  const b3TopUnder = DATUMS.LINTEL_TOP - B3_THICK; // 18.53m
+
+  B3_BAYS.forEach((sBay) => {
+    const legZ = B3_SPAN_OUT / 2 - B3_THICK / 2; // ±9.19m
+
+    // Left & Right wide flat vertical concrete walls (0.0m -> 18.53m)
+    [-legZ, legZ].forEach((zLeg) => {
+      const wall = addArchMesh(
+        b3Local,
+        new THREE.BoxGeometry(B3_WIDTH_S, b3TopUnder, B3_THICK),
+        matPortalConcrete
+      );
+      wall.position.set(sBay, b3TopUnder / 2, zLeg);
+    });
+
+    // Seamless horizontal top slab (18.53m -> 19.15m)
+    const topSlab = addArchMesh(
+      b3Local,
+      new THREE.BoxGeometry(B3_WIDTH_S, B3_THICK, B3_SPAN_OUT),
+      matPortalConcrete
+    );
+    topSlab.position.set(sBay, b3TopUnder + B3_THICK / 2, 0);
+
+    // Steel tension hangers dropping from B3 top slab (+18.53m) to SAFEGE box girders (+16.70m)
+    [-2.8, 2.8].forEach((ds) => {
+      [-2.2, 2.2].forEach((zTrack) => {
+        const hanger = addArchMesh(b3Local, new THREE.BoxGeometry(0.32, 1.95, 0.32), matSteelGirder);
+        hanger.position.set(sBay + ds, DATUMS.GIRDER_TOP + 0.92, zTrack);
+      });
+    });
+  });
+
+  // B3 Twin Independent Roof Plates (peelable) + 4 matching 8.4m-wide thin spacers
+  const b3RoofNE = addArchMesh(b3RoofLocal, new THREE.BoxGeometry(ROOF_LEN, ROOF_SLAB_T, ROOF_PLATE_W), matShellRoof);
+  b3RoofNE.position.set(0, DATUMS.ROOF_LOW + ROOF_SLAB_T / 2, -(SLIT_HALF + ROOF_PLATE_W / 2));
+
+  const b3RoofSW = addArchMesh(b3RoofLocal, new THREE.BoxGeometry(ROOF_LEN, ROOF_SLAB_T, ROOF_PLATE_W), matShellRoof);
+  b3RoofSW.position.set(0, DATUMS.ROOF_HIGH + ROOF_SLAB_T / 2, SLIT_HALF + ROOF_PLATE_W / 2);
+
+  B3_BAYS.forEach((sBay) => {
+    const spacer = addArchMesh(b3RoofLocal, new THREE.BoxGeometry(B3_WIDTH_S, 0.50, 7.6), matPortalConcrete);
     spacer.position.set(sBay, DATUMS.ROOF_LOW + 0.25, SLIT_HALF + 4.2);
   });
 
@@ -1021,7 +1059,7 @@ export function createHubScene() {
     return { group: g, sCenter, uCenter, size };
   }
 
-  const sliceS1 = createSliceBoxHelper(4.0, 6.0, 0x6b242b);
+  const sliceS1 = createSliceBoxHelper(11.0, 5.0, 0x6b242b);
   const sliceS2 = createSliceBoxHelper(-53.0, -3.0, 0x2c5a56);
   groups.helpers.add(sliceS1.group);
   groups.helpers.add(sliceS2.group);
@@ -1104,7 +1142,7 @@ export function createHubScene() {
   // =========================================================================
   const state = {
     contextMode: 'ghost',
-    stationVariant: 'B2',
+    stationVariant: 'B3',
     acousticVariant: 'A1',
     sliceMode: 'OFF',
     clipToSlice: false,
@@ -1120,10 +1158,14 @@ export function createHubScene() {
     groups.contextMassing.visible = state.contextMode === 'ghost';
     groups.contextFootprints.visible = state.contextMode !== 'hidden';
 
+    const isB1 = state.stationVariant === 'B1';
     const isB2 = state.stationVariant === 'B2';
-    groups.stationB1.visible = !isB2;
+    const isB3 = state.stationVariant === 'B3';
+    groups.stationB1.visible = isB1;
     groups.stationB2.visible = isB2;
     groups.stationB2Roof.visible = isB2;
+    groups.stationB3.visible = isB3;
+    groups.stationB3Roof.visible = isB3;
 
     groups.acousticA1.visible = state.acousticVariant === 'A1';
     groups.acousticA2.visible = state.acousticVariant === 'A2';
@@ -1147,22 +1189,27 @@ export function createHubScene() {
     groups.station3F.position.y = ex * 17.0;
     groups.stationB1.position.y = ex * 17.0;
     groups.stationB2.position.y = ex * 17.0;
+    groups.stationB3.position.y = ex * 17.0;
     groups.safegeTracks.position.y = ex * 17.0;
     groups.acousticA1.position.y = ex * 17.0;
     groups.acousticA2.position.y = ex * 17.0;
     groups.stationB2Roof.position.y = ex * 25.0;
+    groups.stationB3Roof.position.y = ex * 25.0;
     explodeAxesGroup.visible = ex > 0.02;
 
     const p = state.peel;
     const peelLift = p * 10.5;
     const peelOpacity = Math.max(0.0, 1.0 - p * 1.15);
     groups.stationB2Roof.position.y += peelLift;
+    groups.stationB3Roof.position.y += peelLift;
     groups.acousticA1.position.y += peelLift * 0.65;
     groups.acousticA2.position.y += peelLift * 0.65;
     matShellRoof.opacity = peelOpacity;
     matAcoustic.opacity = peelOpacity;
 
-    if (isB2) {
+    if (isB3) {
+      groups.stationB3Roof.visible = peelOpacity > 0.04;
+    } else if (isB2) {
       groups.stationB2Roof.visible = peelOpacity > 0.04;
     } else {
       groups.stationB1.visible = peelOpacity > 0.04;

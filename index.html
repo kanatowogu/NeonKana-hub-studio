@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23d8d5ce'/><circle cx='16' cy='16' r='9' fill='none' stroke='%236b242b' stroke-width='2.5'/></svg>" />
-  <title>BNBU 二期书院区跨校区单轨枢纽 · Option A 概念白模共创台 V2</title>
+  <title>BNBU 二期书院区跨校区单轨枢纽 · Option A 概念白模共创台 V3</title>
   <style>
     :root {
       --bg: #eceae4;
@@ -183,9 +183,9 @@
   <canvas id="viewport"></canvas>
 
   <div class="title-card">
-    <div class="title-kicker">CCM3123 Group Project · Option A · V2</div>
+    <div class="title-kicker">CCM3123 Group Project · Option A · V3</div>
     <div class="title-main">BNBU 二期书院区跨校区单轨枢纽</div>
-    <div class="title-sub">2F 环廊 Ø100m · 65.5m 向心 U 形书院 · SAFEGE 悬挂双线 · B2 倒 U 门架双屋顶</div>
+    <div class="title-sub">2F 环廊 Ø100m · 65.5m 向心 U 形书院 · SAFEGE 悬挂双线 · B3 扁平折板门架(4)</div>
   </div>
 
   <div class="hud-bar">
@@ -200,7 +200,7 @@
 
   <aside id="controlPanel" class="panel">
     <div class="panel-header">
-      <span>共创控制台 · V2 White Model</span>
+      <span>共创控制台 · V3 White Model</span>
       <button id="closePanelBtn" style="padding:2px 7px;font-size:11px;">收起</button>
     </div>
     <div class="panel-body">
@@ -211,7 +211,7 @@
         <div class="btn-grid">
           <button data-cam="aerial" class="active">主鸟瞰 3/4</button>
           <button data-cam="plan">正交总平面</button>
-          <button data-cam="b2hero">B2 倒 U 门架</button>
+          <button data-cam="b2hero">门架双屋顶</button>
           <button data-cam="platform">3F 站台内视</button>
           <button data-cam="canyon">穿隙隔音视角</button>
           <button data-cam="courtyard">中庭水池仰视</button>
@@ -232,15 +232,16 @@
 
       <div class="divider"></div>
 
-      <!-- 3. Differential 3: Station Architecture (B1 vs B2) -->
+      <!-- 3. Differential 3: Station Architecture (B1 vs B2 vs B3) -->
       <section>
-        <div class="sec-title"><span>差分方案 3 · 车站建筑构型</span><span>B1 / B2</span></div>
-        <div class="btn-grid">
-          <button id="btnB1">B1 原版封闭体块</button>
-          <button id="btnB2" class="accent-active">B2 倒 U 门架双屋顶</button>
+        <div class="sec-title"><span>差分方案 3 · 车站建筑构型</span><span>B1 / B2 / B3</span></div>
+        <div class="btn-grid-3">
+          <button id="btnB1">B1 封闭体块</button>
+          <button id="btnB2">B2 方柱门架(7)</button>
+          <button id="btnB3" class="accent-active">B3 扁平折板(4)</button>
         </div>
         <div id="stationDesc" class="note-box" style="margin-top:6px;">
-          B2（默认）：取消两侧封闭外墙，7 组三段正交倒 U 形安藤混凝土巨构门架托起两块错层独立屋顶，中央 1.1m 连续光缝引天光入站。
+          B3（默认）：将支撑减为 4 组 8.4m 宽 × 0.62m 薄的扁平折板式倒 U 清水混凝土门架（∏），中庭通透度最高，托起错层双屋顶与 1.1m 光缝。
         </div>
       </section>
 
@@ -396,8 +397,8 @@
         target: new THREE.Vector3(0, 4, 0),
       },
       b2hero: {
-        pos: localToWorld(-56, 26, 42),
-        target: localToWorld(4, 14.5, 0),
+        pos: localToWorld(-48, 25, 44),
+        target: localToWorld(6, 13.5, 0),
       },
       platform: {
         pos: localToWorld(-36, 13.6, -6.1),
@@ -460,18 +461,25 @@
 
     const btnB1 = document.getElementById('btnB1');
     const btnB2 = document.getElementById('btnB2');
+    const btnB3 = document.getElementById('btnB3');
     const stationDesc = document.getElementById('stationDesc');
     function setStationVariant(variant) {
       hub.state.stationVariant = variant;
       btnB1.classList.toggle('accent-active', variant === 'B1');
       btnB2.classList.toggle('accent-active', variant === 'B2');
-      stationDesc.textContent = variant === 'B2'
-        ? 'B2（默认）：取消两侧封闭外墙，7 组三段正交倒 U 形安藤混凝土巨构门架托起两块错层独立屋顶，中央 1.1m 连续光缝引天光入站。'
-        : 'B1：原版封闭式清水混凝土格栅外墙 + 水平高窗带，适合与 B2 开敞门架方案直接对比立面通透度。';
+      btnB3.classList.toggle('accent-active', variant === 'B3');
+      if (variant === 'B3') {
+        stationDesc.textContent = 'B3（默认）：将支撑减为 4 组 8.4m 宽 × 0.62m 薄的扁平折板式倒 U 清水混凝土门架（∏），中庭通透度最高，托起错层双屋顶与 1.1m 光缝。';
+      } else if (variant === 'B2') {
+        stationDesc.textContent = 'B2：7 组密集三段正交方柱倒 U 混凝土门架（14m 等距柱跨），结构序列感强，适合与 B3 扁平折板对比柱网密度。';
+      } else {
+        stationDesc.textContent = 'B1：原版封闭式清水混凝土格栅外墙 + 水平高窗带，适合与开敞门架方案对比立面通透度。';
+      }
       hub.applyState();
     }
     btnB1.addEventListener('click', () => setStationVariant('B1'));
     btnB2.addEventListener('click', () => setStationVariant('B2'));
+    btnB3.addEventListener('click', () => setStationVariant('B3'));
 
     const btnA1 = document.getElementById('btnA1');
     const btnA2 = document.getElementById('btnA2');
@@ -573,7 +581,7 @@
       rngExplode.value = 0; valExplode.textContent = '0%'; hub.state.explode = 0;
       rngSecPos.value = 0; valSecPos.textContent = '0.0 m'; hub.state.sectionPos = 0;
       setContextMode('ghost');
-      setStationVariant('B2');
+      setStationVariant('B3');
       setAcoustic('A1');
       setSlice('OFF');
       setSection('OFF');
