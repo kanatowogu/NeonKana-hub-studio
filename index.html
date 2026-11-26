@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23d8d5ce'/><circle cx='16' cy='16' r='9' fill='none' stroke='%236b242b' stroke-width='2.5'/></svg>" />
-  <title>BNBU 二期书院区跨校区单轨枢纽 · Option A 概念白模共创台</title>
+  <title>BNBU 二期书院区跨校区单轨枢纽 · Option A 概念白模共创台 V2</title>
   <style>
     :root {
       --bg: #eceae4;
@@ -13,7 +13,6 @@
       --ink: #22252a;
       --muted: #656a70;
       --accent: #6b242b;
-      --accent-soft: rgba(107, 36, 43, 0.10);
       --sage: #3d5e58;
     }
 
@@ -38,7 +37,6 @@
       display: block;
     }
 
-    /* Top-left architectural title badge */
     .title-card {
       position: fixed;
       top: 16px;
@@ -47,8 +45,7 @@
       backdrop-filter: blur(10px);
       border: 1px solid var(--border);
       padding: 12px 16px;
-      max-width: 350px;
-      pointer-events: auto;
+      max-width: 375px;
       z-index: 10;
     }
     .title-kicker {
@@ -59,20 +56,9 @@
       font-weight: 700;
       margin-bottom: 3px;
     }
-    .title-main {
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 0.01em;
-      line-height: 1.3;
-    }
-    .title-sub {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 4px;
-      line-height: 1.45;
-    }
+    .title-main { font-size: 15px; font-weight: 700; line-height: 1.3; }
+    .title-sub { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
 
-    /* Bottom-left datum & scale HUD */
     .hud-bar {
       position: fixed;
       bottom: 16px;
@@ -91,13 +77,12 @@
     .hud-bar strong { color: var(--ink); font-weight: 600; }
     .hud-sep { width: 1px; height: 12px; background: var(--border); }
 
-    /* Right control sidebar */
     .panel {
       position: fixed;
       top: 16px;
       right: 16px;
       bottom: 16px;
-      width: 300px;
+      width: 308px;
       background: var(--panel);
       backdrop-filter: blur(12px);
       border: 1px solid var(--border);
@@ -106,30 +91,23 @@
       z-index: 12;
       transition: transform 0.25s ease;
     }
-    .panel.collapsed {
-      transform: translateX(calc(100% + 20px));
-    }
+    .panel.collapsed { transform: translateX(calc(100% + 20px)); }
 
     .panel-header {
-      padding: 12px 14px;
+      padding: 11px 14px;
       border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .panel-header span {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
+    .panel-header span { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 
     .panel-body {
-      padding: 12px 14px;
+      padding: 11px 14px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
     }
 
     .sec-title {
@@ -138,98 +116,46 @@
       letter-spacing: 0.07em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 7px;
+      margin-bottom: 6px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .btn-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
-    .btn-grid-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 5px;
-    }
+    .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+    .btn-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
 
     button {
       appearance: none;
       border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.72);
+      background: rgba(255, 255, 255, 0.75);
       color: var(--ink);
-      padding: 6.5px 8px;
+      padding: 6px 7px;
       font-size: 11.5px;
       font-family: inherit;
       cursor: pointer;
       transition: all 0.14s ease;
       text-align: center;
     }
-    button:hover {
-      background: #ffffff;
-      border-color: rgba(42, 46, 51, 0.35);
-    }
-    button.active {
-      background: var(--ink);
-      color: #f7f5f0;
-      border-color: var(--ink);
-      font-weight: 600;
-    }
-    button.accent-active {
-      background: var(--accent);
-      color: #f7f5f0;
-      border-color: var(--accent);
-      font-weight: 600;
-    }
-    button.sage-active {
-      background: var(--sage);
-      color: #f7f5f0;
-      border-color: var(--sage);
-      font-weight: 600;
-    }
+    button:hover { background: #ffffff; border-color: rgba(42, 46, 51, 0.35); }
+    button.active { background: var(--ink); color: #f7f5f0; border-color: var(--ink); font-weight: 600; }
+    button.accent-active { background: var(--accent); color: #f7f5f0; border-color: var(--accent); font-weight: 600; }
+    button.sage-active { background: var(--sage); color: #f7f5f0; border-color: var(--sage); font-weight: 600; }
 
-    .slider-row {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .slider-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11.5px;
-    }
-    .slider-val {
-      font-variant-numeric: tabular-nums;
-      color: var(--accent);
-      font-weight: 600;
-    }
-    input[type="range"] {
-      width: 100%;
-      accent-color: var(--accent);
-      cursor: pointer;
-      height: 4px;
-    }
+    .slider-row { display: flex; flex-direction: column; gap: 4px; }
+    .slider-label { display: flex; justify-content: space-between; font-size: 11.5px; }
+    .slider-val { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 600; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; height: 4px; }
 
-    .check-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 5px 0;
-      font-size: 11.5px;
-      cursor: pointer;
-    }
+    .check-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 0; font-size: 11.5px; cursor: pointer; }
     .check-row input { accent-color: var(--accent); cursor: pointer; }
-
     .divider { height: 1px; background: var(--border); }
 
     .note-box {
       background: rgba(42, 46, 51, 0.04);
       border-left: 2.5px solid var(--accent);
-      padding: 7px 9px;
-      font-size: 11px;
+      padding: 6px 8px;
+      font-size: 10.8px;
       line-height: 1.45;
       color: var(--muted);
     }
@@ -257,24 +183,24 @@
   <canvas id="viewport"></canvas>
 
   <div class="title-card">
-    <div class="title-kicker">CCM3123 Group Project · Option A · V1</div>
+    <div class="title-kicker">CCM3123 Group Project · Option A · V2</div>
     <div class="title-main">BNBU 二期书院区跨校区单轨枢纽</div>
-    <div class="title-sub">SAFEGE 悬挂式双线单轨 · 2F 闭合环廊 + 6 向连桥 · 3F 斜穿主车站与安藤极简白模</div>
+    <div class="title-sub">2F 环廊 Ø100m · 65.5m 向心 U 形书院 · SAFEGE 悬挂双线 · B2 倒 U 门架双屋顶</div>
   </div>
 
   <div class="hud-bar">
-    <span><strong>标高</strong> 1F ±0.0 / 2F +4.8 / 3F +9.6 / 箱梁 +13.1m</span>
+    <span><strong>标高</strong> 1F ±0.0 / 2F +5.2 / 3F +11.6 / 箱梁 +15.3 / 双屋顶 +19.2m</span>
+    <span class="hud-sep"></span>
+    <span><strong>尺度</strong> 环廊直径 100m · 宿舍 65.5m</span>
     <span class="hud-sep"></span>
     <span><strong>光影</strong> 55° 太阳光 · #D8D5CE</span>
-    <span class="hud-sep"></span>
-    <span><strong>交互</strong> 左键旋转 · 右键平移 · 滚轮缩放</span>
   </div>
 
   <button id="openPanelBtn" class="toggle-panel-btn" style="display:none;">展开控制面板</button>
 
   <aside id="controlPanel" class="panel">
     <div class="panel-header">
-      <span>共创控制台 · White Model</span>
+      <span>共创控制台 · V2 White Model</span>
       <button id="closePanelBtn" style="padding:2px 7px;font-size:11px;">收起</button>
     </div>
     <div class="panel-body">
@@ -285,18 +211,18 @@
         <div class="btn-grid">
           <button data-cam="aerial" class="active">主鸟瞰 3/4</button>
           <button data-cam="plan">正交总平面</button>
-          <button data-cam="courtyard">中庭仰视</button>
+          <button data-cam="b2hero">B2 倒 U 门架</button>
           <button data-cam="platform">3F 站台内视</button>
           <button data-cam="canyon">穿隙隔音视角</button>
-          <button data-cam="bridge2f">2F 环廊连桥</button>
+          <button data-cam="courtyard">中庭水池仰视</button>
         </div>
       </section>
 
       <div class="divider"></div>
 
-      <!-- 1b. Existing Phase II Colleges Display Mode -->
+      <!-- 2. Existing Phase II Colleges Context Mode -->
       <section>
-        <div class="sec-title"><span>二期既有书院建筑群</span><span>Context</span></div>
+        <div class="sec-title"><span>二期既有书院建筑群（65.5m）</span><span>Context</span></div>
         <div class="btn-grid-3">
           <button id="btnCtxGhost" class="active">幽灵体块</button>
           <button id="btnCtxWire">仅地面线框</button>
@@ -306,21 +232,35 @@
 
       <div class="divider"></div>
 
-      <!-- 2. Acoustic Variant Toggle (A1 vs A2) -->
+      <!-- 3. Differential 3: Station Architecture (B1 vs B2) -->
+      <section>
+        <div class="sec-title"><span>差分方案 3 · 车站建筑构型</span><span>B1 / B2</span></div>
+        <div class="btn-grid">
+          <button id="btnB1">B1 原版封闭体块</button>
+          <button id="btnB2" class="accent-active">B2 倒 U 门架双屋顶</button>
+        </div>
+        <div id="stationDesc" class="note-box" style="margin-top:6px;">
+          B2（默认）：取消两侧封闭外墙，7 组三段正交倒 U 形安藤混凝土巨构门架托起两块错层独立屋顶，中央 1.1m 连续光缝引天光入站。
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 4. Differential 1: Acoustic Enclosures (A1 vs A2) -->
       <section>
         <div class="sec-title"><span>差分方案 1 · 隔音设施造型</span><span>A1 / A2</span></div>
         <div class="btn-grid">
           <button id="btnA1" class="accent-active">A1 折面半开敞</button>
           <button id="btnA2">A2 全包隔音罩</button>
         </div>
-        <div id="acousticDesc" class="note-box" style="margin-top:7px;">
-          A1：安藤折面清水混凝土声屏障，顶部留 1.4m 连续采光缝，侧向遮挡宿舍视线与噪声。
+        <div id="acousticDesc" class="note-box" style="margin-top:6px;">
+          A1：安藤折面清水混凝土声屏障，顶部留 1.4m 连续采光缝，侧向遮挡 65.5m 宿舍视线与噪声。
         </div>
       </section>
 
       <div class="divider"></div>
 
-      <!-- 3. 1:100 Physical Model Slice Box Toggle (S1 vs S2) -->
+      <!-- 5. Differential 2: 1:100 Physical Slice Box (30m × 30m) -->
       <section>
         <div class="sec-title"><span>差分方案 2 · 1:100 白模切片框</span><span>30×30m</span></div>
         <div class="btn-grid-3">
@@ -328,42 +268,34 @@
           <button id="btnSliceS1">S1 枢纽核心</button>
           <button id="btnSliceS2">S2 穿隙阈值</button>
         </div>
-        <label class="check-row" style="margin-top:5px;">
+        <label class="check-row" style="margin-top:4px;">
           <span>按当前切片框实时裁切实体（1:100 预览）</span>
           <input type="checkbox" id="chkClipSlice" />
         </label>
         <div id="sliceDesc" class="note-box">
-          1:100 实体白模底板 30cm×30cm = 真实 30m×30m，可切换 S1/S2 对比展示核心。
+          1:100 实体白模底板 30cm×30cm = 真实 30m×30m（已按 Ø100m 环廊尺度重校准）。
         </div>
       </section>
 
       <div class="divider"></div>
 
-      <!-- 4. Shell/Acoustic Peel + 2F/3F Explode Sliders -->
-      <section style="display:flex;flex-direction:column;gap:11px;">
+      <!-- 6. Peel & Explode Sliders -->
+      <section style="display:flex;flex-direction:column;gap:9px;">
         <div class="sec-title"><span>空间解构与透视</span><span>Deconstruct</span></div>
-
         <div class="slider-row">
-          <div class="slider-label">
-            <span>外壳 / 隔音罩剥离</span>
-            <span id="valPeel" class="slider-val">0%</span>
-          </div>
+          <div class="slider-label"><span>屋顶外壳 / 隔音罩剥离</span><span id="valPeel" class="slider-val">0%</span></div>
           <input type="range" id="rngPeel" min="0" max="100" value="0" />
         </div>
-
         <div class="slider-row">
-          <div class="slider-label">
-            <span>2F / 3F 垂直爆炸展开</span>
-            <span id="valExplode" class="slider-val">0%</span>
-          </div>
+          <div class="slider-label"><span>2F / 3F 垂直爆炸展开</span><span id="valExplode" class="slider-val">0%</span></div>
           <input type="range" id="rngExplode" min="0" max="100" value="0" />
         </div>
       </section>
 
       <div class="divider"></div>
 
-      <!-- 5. Real-Time Architectural Section Slider -->
-      <section style="display:flex;flex-direction:column;gap:8px;">
+      <!-- 7. Real-Time Section Cut -->
+      <section style="display:flex;flex-direction:column;gap:7px;">
         <div class="sec-title"><span>实时建筑剖面</span><span>Section Cut</span></div>
         <div class="btn-grid-3">
           <button id="btnSecOff" class="active">关闭</button>
@@ -371,24 +303,21 @@
           <button id="btnSecLong">纵向剖面</button>
         </div>
         <div class="slider-row">
-          <div class="slider-label">
-            <span>剖切面位置</span>
-            <span id="valSecPos" class="slider-val">0.0 m</span>
-          </div>
-          <input type="range" id="rngSecPos" min="-55" max="55" step="0.5" value="0" disabled />
+          <div class="slider-label"><span>剖切面位置</span><span id="valSecPos" class="slider-val">0.0 m</span></div>
+          <input type="range" id="rngSecPos" min="-95" max="95" step="0.5" value="0" disabled />
         </div>
       </section>
 
       <div class="divider"></div>
 
-      <!-- 6. White Model vs Sketch Color Mode + Reset -->
-      <section style="display:flex;flex-direction:column;gap:8px;">
+      <!-- 8. White Model vs Sketch Layer Color -->
+      <section style="display:flex;flex-direction:column;gap:7px;">
         <div class="sec-title"><span>材质表达模式</span><span>Style</span></div>
         <div class="btn-grid">
           <button id="btnMatWhite" class="active">安藤纯净白模</button>
           <button id="btnMatSketch">手绘分层色码</button>
         </div>
-        <button id="btnReset" style="margin-top:2px;">重置全部视图与参数</button>
+        <button id="btnReset">重置全部视图与参数</button>
       </section>
 
     </div>
@@ -399,13 +328,9 @@
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { createHubScene, localToWorld } from './scene_builder.js';
 
-    // --- Renderer Setup (SKILL.md ACESFilmicToneMapping + PCFSoftShadowMap 4096) ---
     const canvas = document.getElementById('viewport');
     const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      powerPreference: 'high-performance',
-      preserveDrawingBuffer: true,
+      canvas, antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: true,
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -416,27 +341,24 @@
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.localClippingEnabled = true;
 
-    // --- Scene & Atmosphere ---
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xeceae4);
-    scene.fog = new THREE.Fog(0xeceae4, 195, 360);
+    scene.fog = new THREE.Fog(0xeceae4, 340, 620);
 
-    // --- Camera & OrbitControls ---
-    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.4, 700);
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.5, 1100);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.065;
     controls.maxPolarAngle = Math.PI / 2 - 0.02;
-    controls.minDistance = 8;
-    controls.maxDistance = 240;
+    controls.minDistance = 10;
+    controls.maxDistance = 420;
 
-    // --- Lighting Rig (SKILL.md §2.2: 55° Elevation Directional Sun + Soft Hemisphere) ---
-    const hemiLight = new THREE.HemisphereLight(0xf6f8fb, 0xd8d2c6, 0.78);
-    scene.add(hemiLight);
+    // 55° Sun + Hemisphere Light (SKILL.md Standard)
+    scene.add(new THREE.HemisphereLight(0xf6f8fb, 0xd8d2c6, 0.78));
 
     const sunElev = THREE.MathUtils.degToRad(55);
     const sunAzim = THREE.MathUtils.degToRad(38);
-    const sunDist = 140;
+    const sunDist = 220;
     const sunLight = new THREE.DirectionalLight(0xfffaf2, 1.55);
     sunLight.position.set(
       Math.cos(sunElev) * Math.cos(sunAzim) * sunDist,
@@ -445,51 +367,49 @@
     );
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.set(4096, 4096);
-    sunLight.shadow.camera.near = 20;
-    sunLight.shadow.camera.far = 320;
-    const d = 115;
+    sunLight.shadow.camera.near = 30;
+    sunLight.shadow.camera.far = 520;
+    const d = 175;
     sunLight.shadow.camera.left = -d;
     sunLight.shadow.camera.right = d;
     sunLight.shadow.camera.top = d;
     sunLight.shadow.camera.bottom = -d;
     sunLight.shadow.bias = -0.00035;
-    sunLight.shadow.normalBias = 0.04;
+    sunLight.shadow.normalBias = 0.05;
     scene.add(sunLight);
 
-    // Subtle cool rim fill to keep shadowed concrete reveals crisp
-    const rimLight = new THREE.DirectionalLight(0xdce6f0, 0.35);
-    rimLight.position.set(-90, 45, -80);
+    const rimLight = new THREE.DirectionalLight(0xdce6f0, 0.34);
+    rimLight.position.set(-140, 65, -130);
     scene.add(rimLight);
 
-    // --- Build Parametric Hub Model ---
     const hub = createHubScene();
     scene.add(hub.root);
 
-    // --- Camera Presets (Smooth Animated Flythrough) ---
+    // Camera Presets calibrated for D=100m 2F Ring & 65.5m Dormitory Wings
     const CAM_PRESETS = {
       aerial: {
-        pos: new THREE.Vector3(78, 62, 74),
-        target: new THREE.Vector3(0, 8, 0),
+        pos: new THREE.Vector3(128, 98, 126),
+        target: new THREE.Vector3(0, 10, 0),
       },
       plan: {
-        pos: new THREE.Vector3(0, 162, 0.01),
+        pos: new THREE.Vector3(0, 355, 0.01),
         target: new THREE.Vector3(0, 4, 0),
       },
-      courtyard: {
-        pos: localToWorld(-14, 2.2, -19),
-        target: localToWorld(4, 11.5, 4),
+      b2hero: {
+        pos: localToWorld(-56, 26, 42),
+        target: localToWorld(4, 14.5, 0),
       },
       platform: {
-        pos: localToWorld(-22, 11.35, -5.1),
-        target: localToWorld(8, 12.0, -2.0),
+        pos: localToWorld(-36, 13.6, -6.1),
+        target: localToWorld(18, 15.2, -1.5),
       },
       canyon: {
-        pos: localToWorld(-74, 23, 28),
-        target: localToWorld(-34, 11.5, 0),
+        pos: localToWorld(-128, 32, 34),
+        target: localToWorld(-58, 14.0, 0),
       },
-      bridge2f: {
-        pos: localToWorld(-24, 9.2, -34),
-        target: localToWorld(-18, 6.2, -24),
+      courtyard: {
+        pos: localToWorld(-24, 3.2, -26),
+        target: localToWorld(8, 14.5, 4),
       },
     };
 
@@ -538,6 +458,21 @@
     btnCtxWire.addEventListener('click', () => setContextMode('wireframe'));
     btnCtxHide.addEventListener('click', () => setContextMode('hidden'));
 
+    const btnB1 = document.getElementById('btnB1');
+    const btnB2 = document.getElementById('btnB2');
+    const stationDesc = document.getElementById('stationDesc');
+    function setStationVariant(variant) {
+      hub.state.stationVariant = variant;
+      btnB1.classList.toggle('accent-active', variant === 'B1');
+      btnB2.classList.toggle('accent-active', variant === 'B2');
+      stationDesc.textContent = variant === 'B2'
+        ? 'B2（默认）：取消两侧封闭外墙，7 组三段正交倒 U 形安藤混凝土巨构门架托起两块错层独立屋顶，中央 1.1m 连续光缝引天光入站。'
+        : 'B1：原版封闭式清水混凝土格栅外墙 + 水平高窗带，适合与 B2 开敞门架方案直接对比立面通透度。';
+      hub.applyState();
+    }
+    btnB1.addEventListener('click', () => setStationVariant('B1'));
+    btnB2.addEventListener('click', () => setStationVariant('B2'));
+
     const btnA1 = document.getElementById('btnA1');
     const btnA2 = document.getElementById('btnA2');
     const acousticDesc = document.getElementById('acousticDesc');
@@ -546,8 +481,8 @@
       btnA1.classList.toggle('accent-active', variant === 'A1');
       btnA2.classList.toggle('accent-active', variant === 'A2');
       acousticDesc.textContent = variant === 'A1'
-        ? 'A1：安藤折面清水混凝土声屏障，顶部留 1.4m 连续采光缝，侧向遮挡宿舍视线与噪声。'
-        : 'A2：连续全包倒角穿孔隔音罩，嵌半透明隔声玻璃观察带，夜间宿舍降噪最彻底。';
+        ? 'A1：安藤折面清水混凝土声屏障，顶部留 1.4m 连续采光缝，侧向遮挡 65.5m 宿舍视线与噪声。'
+        : 'A2：连续全包倒角穿孔隔音罩，嵌半透明隔声玻璃观察带，穿越宿舍峡谷段降噪最彻底。';
       hub.applyState();
     }
     btnA1.addEventListener('click', () => setAcoustic('A1'));
@@ -558,7 +493,6 @@
     const btnSliceS2 = document.getElementById('btnSliceS2');
     const chkClipSlice = document.getElementById('chkClipSlice');
     const sliceDesc = document.getElementById('sliceDesc');
-
     function setSlice(mode) {
       hub.state.sliceMode = mode;
       btnSliceOff.classList.toggle('active', mode === 'OFF');
@@ -567,11 +501,11 @@
       if (mode === 'OFF') {
         chkClipSlice.checked = false;
         hub.state.clipToSlice = false;
-        sliceDesc.textContent = '1:100 实体白模底板 30cm×30cm = 真实 30m×30m，可切换 S1/S2 对比展示核心。';
+        sliceDesc.textContent = '1:100 实体白模底板 30cm×30cm = 真实 30m×30m（已按 Ø100m 环廊尺度重校准）。';
       } else if (mode === 'S1') {
-        sliceDesc.textContent = 'S1 枢纽核心切片（30m×30m）：囊括 3F 车站中段 + SAFEGE 列车 + 2F 环廊 + 东北圆柱/西南方盒双交通核。';
+        sliceDesc.textContent = 'S1 枢纽核心切片（30m×30m）：精准框选 2 跨 B2 倒 U 门架 + 双屋顶光缝 + 悬挂列车 + 东北圆柱核 + 水池台地边。';
       } else {
-        sliceDesc.textContent = 'S2 穿隙阈值切片（30m×30m）：聚焦 3F 车站西北端头 + 隔音屏障起始段 + 2F 环廊与书院放射连桥接驳口。';
+        sliceDesc.textContent = 'S2 穿隙阈值切片（30m×30m）：聚焦 3F 车站西北端头 + 隔音屏障起始段 + Ø100m 2F 环廊与底层单车格栅廊。';
       }
       hub.applyState();
     }
@@ -605,7 +539,6 @@
     const btnSecLong = document.getElementById('btnSecLong');
     const rngSecPos = document.getElementById('rngSecPos');
     const valSecPos = document.getElementById('valSecPos');
-
     function setSection(mode) {
       hub.state.sectionEnabled = mode !== 'OFF';
       if (mode !== 'OFF') hub.state.sectionAxis = mode;
@@ -639,15 +572,15 @@
       rngPeel.value = 0; valPeel.textContent = '0%'; hub.state.peel = 0;
       rngExplode.value = 0; valExplode.textContent = '0%'; hub.state.explode = 0;
       rngSecPos.value = 0; valSecPos.textContent = '0.0 m'; hub.state.sectionPos = 0;
-      setAcoustic('A1');
       setContextMode('ghost');
+      setStationVariant('B2');
+      setAcoustic('A1');
       setSlice('OFF');
       setSection('OFF');
       setColorMode('white');
       flyTo('aerial');
     });
 
-    // Panel collapse
     const panel = document.getElementById('controlPanel');
     const openPanelBtn = document.getElementById('openPanelBtn');
     document.getElementById('closePanelBtn').addEventListener('click', () => {
@@ -659,14 +592,12 @@
       openPanelBtn.style.display = 'none';
     });
 
-    // Resize
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Render loop
     function animate(now) {
       requestAnimationFrame(animate);
       if (camAnim) {
@@ -681,22 +612,19 @@
     }
     requestAnimationFrame(animate);
 
-    // Headless Verification Hook
     window.__STUDIO__ = {
       flyTo: (k) => flyTo(k, true),
       setContextMode,
+      setStationVariant,
       setAcoustic,
-      checkCollisions: () => hub.checkCollisions(),
       setSlice,
       setColorMode,
       setSection,
+      checkCollisions: () => hub.checkCollisions(),
       setPeel: (v) => { rngPeel.value = Math.round(v * 100); valPeel.textContent = `${rngPeel.value}%`; hub.state.peel = v; hub.applyState(); },
       setExplode: (v) => { rngExplode.value = Math.round(v * 100); valExplode.textContent = `${rngExplode.value}%`; hub.state.explode = v; hub.applyState(); },
       setSectionPos: (v) => { rngSecPos.value = v; valSecPos.textContent = `${v.toFixed(1)} m`; hub.state.sectionPos = v; hub.applyState(); },
       setClipToSlice: (b) => { chkClipSlice.checked = b; hub.state.clipToSlice = b; hub.applyState(); },
-      hideUI: (b) => {
-        panel.style.display = b ? 'none' : 'flex';
-      },
       renderOnce: () => { controls.update(); renderer.render(scene, camera); },
     };
   </script>
