@@ -16,6 +16,12 @@ export const AXIS_RAD = THREE.MathUtils.degToRad(AXIS_DEG);
 export const DIR_SE = new THREE.Vector3(Math.cos(AXIS_RAD), 0, Math.sin(AXIS_RAD));
 export const PERP_NE = new THREE.Vector3(Math.sin(AXIS_RAD), 0, -Math.cos(AXIS_RAD));
 
+// Physical White-Model Reference Scale: 2F Ring Radius 50.0m -> 30.0cm (1:166.67, 1m = 0.6cm)
+export const MODEL_RING_RADIUS_CM = 30.0;
+export const CM_PER_METER = MODEL_RING_RADIUS_CM / 50.0;
+export const toCm = (m) => (m * CM_PER_METER).toFixed(1);
+export const toMm = (m) => Math.round(m * CM_PER_METER * 10);
+
 export const DATUMS = {
   WATER: -0.45,
   F1: 0.0,
@@ -173,6 +179,7 @@ export function createHubScene() {
     acousticA2: new THREE.Group(),        // 06b_Acoustic_A2_Tunnel
     figures: new THREE.Group(),           // 07_Scale_Figures
     helpers: new THREE.Group(),           // 08_SliceBox_SectionPlane_Axes
+    dimensions: new THREE.Group(),        // 09_3D_CM_Dimensions
   };
 
   Object.entries(groups).forEach(([k, g]) => { g.name = k; root.add(g); });
@@ -1094,6 +1101,347 @@ export function createHubScene() {
   groups.helpers.add(explodeAxesGroup);
 
   // =========================================================================
+  // 09. 3D PHYSICAL WHITE-MODEL CM ANNOTATIONS (R_ring = 30.0cm -> 1:166.67)
+  // =========================================================================
+  const dimCoreSite = new THREE.Group();
+  const dimCore2F = new THREE.Group();
+  const dimCore3F = makeTrackAlignedGroup('Dim_Core_3F');
+  const dimCoreCores = makeTrackAlignedGroup('Dim_Core_Cores');
+  const dimCoreB1 = makeTrackAlignedGroup('Dim_Core_B1');
+  const dimCoreB2 = makeTrackAlignedGroup('Dim_Core_B2');
+  const dimCoreB3 = makeTrackAlignedGroup('Dim_Core_B3');
+
+  const dimExtraSite = new THREE.Group();
+  const dimExtra2F = new THREE.Group();
+  const dimExtraCanyon = makeTrackAlignedGroup('Dim_Extra_Canyon');
+  const dimExtraA1 = makeTrackAlignedGroup('Dim_Extra_A1');
+  const dimExtraA2 = makeTrackAlignedGroup('Dim_Extra_A2');
+
+  [
+    dimCoreSite, dimCore2F, dimCore3F, dimCoreCores, dimCoreB1, dimCoreB2, dimCoreB3,
+    dimExtraSite, dimExtra2F, dimExtraCanyon, dimExtraA1, dimExtraA2,
+  ].forEach((dg) => groups.dimensions.add(dg));
+
+  function createDimBadgeSprite(titleText, subText, accentColor = '#6b242b', worldHeight = 4.2) {
+    const W = 512;
+    const H = 136;
+    const cvs = document.createElement('canvas');
+    cvs.width = W;
+    cvs.height = H;
+    const ctx = cvs.getContext('2d');
+
+    ctx.fillStyle = 'rgba(250, 248, 244, 0.94)';
+    ctx.fillRect(2, 2, W - 4, H - 4);
+    ctx.strokeStyle = 'rgba(42, 46, 51, 0.35)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(2, 2, W - 4, H - 4);
+
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(2, 2, 12, H - 4);
+
+    ctx.fillStyle = '#1f2328';
+    ctx.font = '700 42px "Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(titleText, 26, 48);
+
+    ctx.fillStyle = '#5c6168';
+    ctx.font = '500 26px "Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif';
+    ctx.fillText(subText, 26, 98);
+
+    const tex = new THREE.CanvasTexture(cvs);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.minFilter = THREE.LinearFilter;
+    const mat = new THREE.SpriteMaterial({
+      map: tex,
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+    });
+    const sprite = new THREE.Sprite(mat);
+    sprite.renderOrder = 999;
+    sprite.scale.set(worldHeight * (W / H), worldHeight, 1);
+    return sprite;
+  }
+
+  function addDimMeasure(parent, pA, pB, { label, sub, offsetVec = new THREE.Vector3(0, 0, 0), color = 0x6b242b, badgeColor = '#6b242b', badgeH = 4.0, tickAxis = null } = {}) {
+    const qA = pA.clone().add(offsetVec);
+    const qB = pB.clone().add(offsetVec);
+    const lineDir = qB.clone().sub(qA);
+    const len = lineDir.length() || 1;
+    lineDir.divideScalar(len);
+
+    // Witness overshoot
+    const extDir = offsetVec.lengthSq() > 0.001 ? offsetVec.clone().normalize().multiplyScalar(0.8) : new THREE.Vector3(0, 0, 0);
+    const wA = qA.clone().add(extDir);
+    const wB = qB.clone().add(extDir);
+
+    // Perpendicular tick vector
+    let tick;
+    if (tickAxis) {
+      tick = tickAxis.clone().normalize().multiplyScalar(0.9);
+    } else if (Math.abs(lineDir.y) > 0.9) {
+      tick = new THREE.Vector3(0.9, 0, 0);
+    } else {
+      tick = new THREE.Vector3(-lineDir.z, 0, lineDir.x).normalize().multiplyScalar(0.9);
+    }
+
+    const pts = [
+      qA, qB,
+      pA, wA,
+      pB, wB,
+      qA.clone().sub(tick), qA.clone().add(tick),
+      qB.clone().sub(tick), qB.clone().add(tick),
+    ];
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.88, depthTest: false });
+    const segs = new THREE.LineSegments(geo, mat);
+    segs.renderOrder = 998;
+    parent.add(segs);
+
+    const mid = qA.clone().add(qB).multiplyScalar(0.5);
+    mid.y += 1.6;
+    const badge = createDimBadgeSprite(label, sub, badgeColor, badgeH);
+    badge.position.copy(mid);
+    parent.add(badge);
+  }
+
+  function addDimCallout(parent, anchorPt, labelPt, { label, sub, color = 0x6b242b, badgeColor = '#6b242b', badgeH = 3.8 } = {}) {
+    const geo = new THREE.BufferGeometry().setFromPoints([anchorPt, labelPt]);
+    const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.85, depthTest: false });
+    const line = new THREE.Line(geo, mat);
+    line.renderOrder = 998;
+    parent.add(line);
+
+    const dot = new THREE.Mesh(
+      new THREE.SphereGeometry(0.45, 10, 10),
+      new THREE.MeshBasicMaterial({ color, depthTest: false })
+    );
+    dot.position.copy(anchorPt);
+    dot.renderOrder = 999;
+    parent.add(dot);
+
+    const badge = createDimBadgeSprite(label, sub, badgeColor, badgeH);
+    badge.position.copy(labelPt).add(new THREE.Vector3(0, 1.4, 0));
+    parent.add(badge);
+  }
+
+  // --- Core 3D cm Annotations ---
+  // 2F Ring (R = 50m -> 30.0cm)
+  addDimMeasure(dimCore2F, new THREE.Vector3(0, DATUMS.F2 + 0.4, 0), new THREE.Vector3(50.0, DATUMS.F2 + 0.4, 0), {
+    label: 'R = 30.0 cm (基准)',
+    sub: '2F 环廊半径 50m · 直径 60.0 cm',
+    offsetVec: new THREE.Vector3(0, 2.2, 0),
+    color: 0x6b242b,
+    badgeColor: '#6b242b',
+    badgeH: 4.5,
+  });
+  const aRingW = THREE.MathUtils.degToRad(-150);
+  addDimMeasure(
+    dimCore2F,
+    new THREE.Vector3(Math.cos(aRingW) * 47.4, DATUMS.F2 + 0.2, Math.sin(aRingW) * 47.4),
+    new THREE.Vector3(Math.cos(aRingW) * 52.6, DATUMS.F2 + 0.2, Math.sin(aRingW) * 52.6),
+    {
+      label: '环廊宽 3.1 cm',
+      sub: '5.2m · 板厚 3mm · 栏高 0.7cm',
+      offsetVec: new THREE.Vector3(0, 3.2, 0),
+      color: 0x3d5e58,
+      badgeColor: '#3d5e58',
+      badgeH: 3.8,
+    }
+  );
+  addDimMeasure(dimCore2F, new THREE.Vector3(-50, 0, 0), new THREE.Vector3(-50, DATUMS.F2, 0), {
+    label: '2F 高 3.1 cm',
+    sub: '标高 +5.2m · 净高 2.8cm',
+    offsetVec: new THREE.Vector3(-5.5, 0, 0),
+    color: 0x3d5e58,
+    badgeColor: '#3d5e58',
+    badgeH: 3.7,
+  });
+
+  // 3F Station & SAFEGE (track-aligned local coords)
+  addDimMeasure(dimCore3F, new THREE.Vector3(-48, DATUMS.F3, 8.2), new THREE.Vector3(48, DATUMS.F3, 8.2), {
+    label: '站台长 57.6 cm',
+    sub: '96.0m · 单侧站台宽 2.5 cm',
+    offsetVec: new THREE.Vector3(0, 0, 7.5),
+    color: 0x6b242b,
+    badgeColor: '#6b242b',
+    badgeH: 4.3,
+  });
+  addDimMeasure(dimCore3F, new THREE.Vector3(-48, DATUMS.F3, -8.2), new THREE.Vector3(-48, DATUMS.F3, 8.2), {
+    label: '站台总宽 9.8 cm',
+    sub: '16.4m · 轨距中心 2.6 cm',
+    offsetVec: new THREE.Vector3(-6.0, 0, 0),
+    color: 0x6b242b,
+    badgeColor: '#6b242b',
+    badgeH: 4.0,
+  });
+  addDimMeasure(dimCore3F, new THREE.Vector3(-48, 0, -8.2), new THREE.Vector3(-48, DATUMS.F3, -8.2), {
+    label: '3F 站台 H 7.0 cm',
+    sub: '+11.6m · 距2F净高 3.5 cm',
+    offsetVec: new THREE.Vector3(-5.0, 0, -5.0),
+    color: 0x6b242b,
+    badgeColor: '#6b242b',
+    badgeH: 3.9,
+  });
+  addDimCallout(dimCore3F, new THREE.Vector3(34, DATUMS.ROOF_HIGH + 0.5, 0), new THREE.Vector3(34, 27.5, 13), {
+    label: '双屋顶 62.4 × 5.3 cm',
+    sub: '中缝 0.7cm · 顶高 11.8/12.1cm',
+    color: 0x2a2e33,
+    badgeColor: '#2a2e33',
+    badgeH: 4.2,
+  });
+  addDimCallout(dimCore3F, new THREE.Vector3(-6, DATUMS.GIRDER_BOT + 0.6, -2.2), new THREE.Vector3(-12, 26.5, -17), {
+    label: '箱梁 H 9.2–10.0 cm',
+    sub: '列车 15.5×1.5×1.6cm · 梁0.8×0.7cm',
+    color: 0x6b242b,
+    badgeColor: '#6b242b',
+    badgeH: 4.1,
+  });
+
+  // B3 Flat Folded Portal dimensions
+  addDimMeasure(dimCoreB3, new THREE.Vector3(12.8, DATUMS.LINTEL_TOP, 9.5), new THREE.Vector3(21.2, DATUMS.LINTEL_TOP, 9.5), {
+    label: 'B3 折板宽 5.0 × 厚 0.4 cm',
+    sub: '4组 · 外跨 11.4 × 高 11.5 cm',
+    offsetVec: new THREE.Vector3(0, 4.2, 4.5),
+    color: 0x6b242b,
+    badgeColor: '#6b242b',
+    badgeH: 4.2,
+  });
+  addDimMeasure(dimCoreB3, new THREE.Vector3(-12.8, DATUMS.LINTEL_TOP - 0.3, 9.5), new THREE.Vector3(12.8, DATUMS.LINTEL_TOP - 0.3, 9.5), {
+    label: '中跨净距 15.4 cm',
+    sub: '25.6m 无柱水池视野',
+    offsetVec: new THREE.Vector3(0, 2.5, 3.0),
+    color: 0x3d5e58,
+    badgeColor: '#3d5e58',
+    badgeH: 3.9,
+  });
+
+  // B2 Square Portal dimensions
+  addDimMeasure(dimCoreB2, new THREE.Vector3(0, DATUMS.LINTEL_TOP, 9.4), new THREE.Vector3(14, DATUMS.LINTEL_TOP, 9.4), {
+    label: 'B2 柱距 8.4 cm (7组)',
+    sub: '柱 0.8×0.7cm · 跨 11.3 × 高 11.5cm',
+    offsetVec: new THREE.Vector3(0, 4.0, 4.0),
+    color: 0x6b242b,
+    badgeColor: '#6b242b',
+    badgeH: 4.2,
+  });
+
+  // B1 Enclosed Box dimensions
+  addDimCallout(dimCoreB1, new THREE.Vector3(0, DATUMS.ROOF_LOW, 8.2), new THREE.Vector3(0, 26.5, 16), {
+    label: 'B1 站体 57.6×9.8×H4.8 cm',
+    sub: '平台至屋顶 7.0–11.8 cm',
+    color: 0x6b242b,
+    badgeColor: '#6b242b',
+    badgeH: 4.1,
+  });
+
+  // Vertical Cores
+  addDimCallout(dimCoreCores, new THREE.Vector3(6.0, CORE_H + 0.4, -16.2), new THREE.Vector3(6.0, 28.5, -27.0), {
+    label: '圆柱核 Ø8.4 × H11.8 cm',
+    sub: '壁厚 0.4cm · 顶部天窗 Ø4.8cm',
+    color: 0x2a2e33,
+    badgeColor: '#2a2e33',
+    badgeH: 4.1,
+  });
+  addDimCallout(dimCoreCores, new THREE.Vector3(-8.0, CORE_H + 0.6, 13.6), new THREE.Vector3(-18.0, 27.5, 24.0), {
+    label: '方盒核 7.2×4.6×H11.8 cm',
+    sub: '壁厚 0.3cm · 电梯井 1.8×1.8cm',
+    color: 0x2a2e33,
+    badgeColor: '#2a2e33',
+    badgeH: 4.1,
+  });
+
+  // Sunken Reflecting Pool
+  addDimCallout(dimCoreSite, new THREE.Vector3(14, 0.2, 14), new THREE.Vector3(20, 9.5, 21), {
+    label: '镜面水池 Ø23.4 cm',
+    sub: '外台地 Ø32.6cm · 步道宽 2.6cm',
+    color: 0x3d5e58,
+    badgeColor: '#3d5e58',
+    badgeH: 3.9,
+  });
+
+  // --- Extra / Full 3D cm Annotations ---
+  // 65.5m Dormitory Wing
+  const dormRad = THREE.MathUtils.degToRad(-75);
+  addDimMeasure(
+    dimExtraSite,
+    new THREE.Vector3(Math.cos(dormRad) * 63.0, 24.0, Math.sin(dormRad) * 63.0),
+    new THREE.Vector3(Math.cos(dormRad) * 128.5, 24.0, Math.sin(dormRad) * 128.5),
+    {
+      label: '宿舍翼 39.3 × 7.8 × H14.4 cm',
+      sub: '65.5×13×24m · 7F · 外环 Ø166.8cm',
+      offsetVec: new THREE.Vector3(0, 4.5, 0),
+      color: 0x4b4f54,
+      badgeColor: '#4b4f54',
+      badgeH: 4.2,
+    }
+  );
+  addDimCallout(dimExtraSite, new THREE.Vector3(pavX, 7.2, pavZ), new THREE.Vector3(pavX + 10, 15.5, pavZ + 8), {
+    label: '东南圆亭 Ø10.6 × H4.3 cm',
+    sub: '现状参照 (Ø17.6×7.2m)',
+    color: 0x4b4f54,
+    badgeColor: '#4b4f54',
+    badgeH: 3.8,
+  });
+  addDimMeasure(dimExtraCanyon, new THREE.Vector3(-68, 14.0, -5.0), new THREE.Vector3(-68, 14.0, -10.0), {
+    label: '穿隙净距 ≥3.0 cm',
+    sub: '真实 ≥4.98m · 0 穿模',
+    offsetVec: new THREE.Vector3(0, 4.5, 0),
+    color: 0x3d5e58,
+    badgeColor: '#3d5e58',
+    badgeH: 3.9,
+  });
+
+  // Extra 2F Elements
+  const brRad = THREE.MathUtils.degToRad(-60);
+  addDimCallout(dimExtra2F, new THREE.Vector3(Math.cos(brRad) * 56, DATUMS.F2 + 0.5, Math.sin(brRad) * 56), new THREE.Vector3(Math.cos(brRad) * 64, 13.5, Math.sin(brRad) * 64), {
+    label: '放射连桥 4.2 × 2.8 cm',
+    sub: '6条 · 接驳节点 2.3×7.2cm',
+    color: 0x3d5e58,
+    badgeColor: '#3d5e58',
+    badgeH: 3.8,
+  });
+  const bkRad = THREE.MathUtils.degToRad(12);
+  addDimCallout(dimExtra2F, new THREE.Vector3(Math.cos(bkRad) * 51.5, 3.2, Math.sin(bkRad) * 51.5), new THREE.Vector3(Math.cos(bkRad) * 62, 11.5, Math.sin(bkRad) * 62), {
+    label: '单车格栅廊 7.6×2.5×H1.9 cm',
+    sub: '12组 · 2F 环廊底层架空',
+    color: 0x3d5e58,
+    badgeColor: '#3d5e58',
+    badgeH: 3.8,
+  });
+  const stRad = THREE.MathUtils.degToRad(-105);
+  addDimCallout(dimExtra2F, new THREE.Vector3(Math.cos(stRad) * 42, 3.0, Math.sin(stRad) * 42), new THREE.Vector3(Math.cos(stRad) * 34, 12.0, Math.sin(stRad) * 34), {
+    label: '大台阶 6.7 × 3.2 × H3.1 cm',
+    sub: '2组 · 含折跑无障碍坡道',
+    color: 0x3d5e58,
+    badgeColor: '#3d5e58',
+    badgeH: 3.8,
+  });
+  addDimCallout(dimExtra2F, new THREE.Vector3(10, 1.75, 4), new THREE.Vector3(2, 8.5, 8), {
+    label: '尺度人偶 H 1.05 cm',
+    sub: '1.75m 比例人物',
+    color: 0x2a2e33,
+    badgeColor: '#2a2e33',
+    badgeH: 3.5,
+  });
+
+  // Acoustic A1 / A2
+  addDimCallout(dimExtraA1, new THREE.Vector3(-84, yAcBase + 5.8, -3.5), new THREE.Vector3(-84, 24.5, -16), {
+    label: 'A1 声屏障 宽5.6×H3.9 cm',
+    sub: '单段长 56.4cm · 顶光缝 0.8cm',
+    color: 0x3d5e58,
+    badgeColor: '#3d5e58',
+    badgeH: 4.0,
+  });
+  addDimCallout(dimExtraA2, new THREE.Vector3(-84, yAcBase + 6.9, -4.8), new THREE.Vector3(-84, 24.5, -16), {
+    label: 'A2 隔音罩 宽5.8×H4.1 cm',
+    sub: '单段长 56.4cm · 全包隔声带',
+    color: 0x3d5e58,
+    badgeColor: '#3d5e58',
+    badgeH: 4.0,
+  });
+
+  // =========================================================================
   // PROGRAMMATIC ZERO-COLLISION AUDIT (Bounding Box vs All 6 Colleges)
   // =========================================================================
   function checkCollisions() {
@@ -1146,6 +1494,7 @@ export function createHubScene() {
     acousticVariant: 'A1',
     sliceMode: 'OFF',
     clipToSlice: false,
+    dimMode: 'core', // 'off' | 'core' | 'all'
     peel: 0.0,
     explode: 0.0,
     sectionEnabled: false,
@@ -1169,6 +1518,23 @@ export function createHubScene() {
 
     groups.acousticA1.visible = state.acousticVariant === 'A1';
     groups.acousticA2.visible = state.acousticVariant === 'A2';
+
+    // 3D cm Dimension Visibility & Variant Sync
+    const showDimCore = state.dimMode === 'core' || state.dimMode === 'all';
+    const showDimAll = state.dimMode === 'all';
+    groups.dimensions.visible = state.dimMode !== 'off';
+    dimCoreSite.visible = showDimCore;
+    dimCore2F.visible = showDimCore;
+    dimCore3F.visible = showDimCore;
+    dimCoreCores.visible = showDimCore;
+    dimCoreB1.visible = showDimCore && isB1;
+    dimCoreB2.visible = showDimCore && isB2;
+    dimCoreB3.visible = showDimCore && isB3;
+    dimExtraSite.visible = showDimAll;
+    dimExtra2F.visible = showDimAll;
+    dimExtraCanyon.visible = showDimAll;
+    dimExtraA1.visible = showDimAll && state.acousticVariant === 'A1';
+    dimExtraA2.visible = showDimAll && state.acousticVariant === 'A2';
 
     if (state.colorMode === 'white') {
       matRing2F.color.setHex(0xd8d5ce);
@@ -1195,6 +1561,14 @@ export function createHubScene() {
     groups.acousticA2.position.y = ex * 17.0;
     groups.stationB2Roof.position.y = ex * 25.0;
     groups.stationB3Roof.position.y = ex * 25.0;
+    dimCore2F.position.y = ex * 8.0;
+    dimExtra2F.position.y = ex * 8.0;
+    dimCore3F.position.y = ex * 17.0;
+    dimCoreB1.position.y = ex * 17.0;
+    dimCoreB2.position.y = ex * 17.0;
+    dimCoreB3.position.y = ex * 17.0;
+    dimExtraA1.position.y = ex * 17.0;
+    dimExtraA2.position.y = ex * 17.0;
     explodeAxesGroup.visible = ex > 0.02;
 
     const p = state.peel;
@@ -1257,5 +1631,50 @@ export function createHubScene() {
 
   applyState();
 
-  return { root, groups, state, applyState, checkCollisions };
+  function getDimensionSpecTable() {
+    return [
+      {
+        group: '一、2F 环形走廊与底层设施（核心基准 R = 30.0 cm）',
+        rows: [
+          ['2F 闭合环廊半径（中心线）', 'R = 50.0 m (D = 100.0 m)', 'R = 30.0 cm (D = 60.0 cm)', '基准尺度 1:166.7'],
+          ['2F 环廊宽度 / 板厚 / 栏高', '宽 5.2m / 厚 0.48m / 栏 1.12m', '宽 3.1 cm / 厚 0.29 cm / 栏 0.67 cm', '3mm 亚克力/卡纸'],
+          ['2F 环廊标高（顶面）', '+5.20 m', 'H = 3.1 cm', '36 根 Ø0.38cm 圆管柱'],
+          ['6 条放射连桥（单条）', '7.0 × 4.6 m', '4.2 × 2.8 cm', '3mm 面板'],
+          ['1F 单车/电单车格栅廊（12组）', '12.6 × 4.2 × H 3.2 m', '7.6 × 2.5 × H 1.9 cm', '1–2mm 格栅条'],
+          ['室外大台阶 + 坡道（2组）', '11.2 × 5.4 × H 5.2 m', '6.7 × 3.2 × H 3.1 cm', '阶梯叠层'],
+        ],
+      },
+      {
+        group: '二、3F 主车站与 B1 / B2 / B3 门架（抬高净空）',
+        rows: [
+          ['3F 双侧站台（长 × 总宽 × 标高）', '96.0 × 16.4 m · +11.60 m', '长 57.6 × 总宽 9.8 cm · H 7.0 cm', '3–4mm 面板（单侧宽 2.5cm）'],
+          ['B3 扁平折板门架（4组·默认）', '宽 8.4 × 厚 0.62 × 跨 19.0 × 高 19.15 m', '宽 5.0 × 厚 0.37 × 跨 11.4 × 高 11.5 cm', '3–4mm 折板（中跨净 15.4cm）'],
+          ['B2 方柱门架（7组·备选）', '柱距 14.0m · 柱 1.35×1.15m · 高 19.15m', '柱距 8.4 cm · 柱 0.8×0.7 cm · 高 11.5 cm', '7–8mm 方木条'],
+          ['B1 封闭站体（备选）', '96.0 × 16.4 × H 8.0 m (站台起)', '57.6 × 9.8 × H 4.8 cm', '2mm 外墙 + 透明片'],
+          ['错层独立双屋顶（含 1.1m 光缝）', '104.0 × 8.8 m (×2) · 顶高 19.65–20.15m', '62.4 × 5.3 cm (×2) · 光缝 0.66 cm', '3mm 屋面板（顶高 11.8/12.1cm）'],
+        ],
+      },
+      {
+        group: '三、SAFEGE 悬挂单轨与隔音设施',
+        rows: [
+          ['SAFEGE 双线空心开槽箱梁', '1.40 × 1.20 m · 底高 +15.30m · 中心距 4.4m', '0.84 × 0.72 cm · H 9.2–10.0 cm · 轨距 2.6 cm', '7×8mm 空心方管/卡纸盒'],
+          ['2 节编组悬挂列车', '25.9 × 2.45 × H 2.65 m', '15.5 × 1.5 × H 1.6 cm', '酒红/暖白涂装块'],
+          ['A1 折面半开敞声屏障（2段）', '单段长 94m · 宽 9.3 × H 6.5 m · 缝 1.4m', '单段长 56.4 × 宽 5.6 × H 3.9 cm · 缝 0.8 cm', '2mm 折板'],
+          ['A2 全包隔音罩（2段）', '单段长 94m · 宽 9.6 × H 6.9 m', '单段长 56.4 × 宽 5.8 × H 4.1 cm', '2mm 壳 + 透明片'],
+        ],
+      },
+      {
+        group: '四、垂直交通核、中庭水池与既有参照',
+        rows: [
+          ['东北圆柱垂直交通核', 'Ø14.0 × H 19.60 m · 天窗 Ø8.0 m', 'Ø8.4 × H 11.8 cm · 天窗 Ø4.8 cm · 壁厚 0.36 cm', '3–4mm 卷筒/3D打印'],
+          ['西南方盒垂直交通核', '12.0 × 7.6 × H 19.60 m', '7.2 × 4.6 × H 11.8 cm · 壁厚 0.28 cm', '3mm 纸板'],
+          ['中央下沉镜面水池 + 台地', '水池 Ø39.0 m · 外台地 Ø54.4 m', '水池 Ø23.4 cm · 外台地 Ø32.6 cm', '1–2mm 叠层水盘'],
+          ['既有 7F 宿舍翼（单栋·6组12栋）', '65.5 × 13.0 × H 24.0 m', '39.3 × 7.8 × H 14.4 cm', '幽灵体块 / 外环 Ø166.8cm'],
+          ['东南现状圆亭 / 尺度人偶', '圆亭 Ø17.6×7.2m / 人高 1.75m', '圆亭 Ø10.6 × H 4.3 cm / 人偶 H 1.05 cm', '1cm 微缩人偶'],
+        ],
+      },
+    ];
+  }
+
+  return { root, groups, state, applyState, checkCollisions, getDimensionSpecTable };
 }

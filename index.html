@@ -169,6 +169,72 @@
       background: var(--panel);
       backdrop-filter: blur(10px);
     }
+
+    /* White-Model cm Cut-List Modal */
+    .spec-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(24, 26, 30, 0.36);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+      padding: 24px;
+    }
+    .spec-modal-backdrop.open { display: flex; }
+    .spec-modal {
+      width: min(920px, 100%);
+      max-height: min(86vh, 780px);
+      background: #f8f6f1;
+      border: 1px solid rgba(42, 46, 51, 0.22);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+    }
+    .spec-modal-head {
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f1eee7;
+    }
+    .spec-modal-head h2 { font-size: 14px; font-weight: 700; }
+    .spec-modal-head p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .spec-modal-body {
+      padding: 14px 18px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .spec-group-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 6px;
+      border-left: 3px solid var(--accent);
+      padding-left: 8px;
+    }
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+      background: #fff;
+    }
+    .spec-table th, .spec-table td {
+      border: 1px solid rgba(42, 46, 51, 0.12);
+      padding: 6px 9px;
+      text-align: left;
+    }
+    .spec-table th {
+      background: #f4f1ea;
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 10.8px;
+    }
+    .spec-table td.cm-col { font-weight: 700; color: var(--ink); }
   </style>
   <script type="importmap">
     {
@@ -189,9 +255,9 @@
   </div>
 
   <div class="hud-bar">
-    <span><strong>标高</strong> 1F ±0.0 / 2F +5.2 / 3F +11.6 / 箱梁 +15.3 / 双屋顶 +19.2m</span>
+    <span><strong>白模参考</strong> 2F 环廊 R = 30.0 cm (1:166.7 · 1m=0.6cm)</span>
     <span class="hud-sep"></span>
-    <span><strong>尺度</strong> 环廊直径 100m · 宿舍 65.5m</span>
+    <span><strong>标高</strong> 2F 3.1cm / 3F 7.0cm / 箱梁 9.2cm / 屋顶 11.8cm</span>
     <span class="hud-sep"></span>
     <span><strong>光影</strong> 55° 太阳光 · #D8D5CE</span>
   </div>
@@ -216,6 +282,19 @@
           <button data-cam="canyon">穿隙隔音视角</button>
           <button data-cam="courtyard">中庭水池仰视</button>
         </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 1b. 3D White-Model cm Annotations (R = 30cm) -->
+      <section>
+        <div class="sec-title"><span>实体白模 3D 尺寸标注</span><span>R=30cm · 1:166.7</span></div>
+        <div class="btn-grid-3">
+          <button id="btnDimOff">关闭</button>
+          <button id="btnDimCore" class="accent-active">核心 cm</button>
+          <button id="btnDimAll">全量 cm</button>
+        </div>
+        <button id="btnOpenSpec" style="width:100%;margin-top:6px;">查看完整 cm 制作切割尺寸表</button>
       </section>
 
       <div class="divider"></div>
@@ -323,6 +402,19 @@
 
     </div>
   </aside>
+
+  <div id="specModalBackdrop" class="spec-modal-backdrop">
+    <div class="spec-modal">
+      <div class="spec-modal-head">
+        <div>
+          <h2>实体白模 cm 制作参考尺寸表（以 2F 环廊半径 R = 30.0 cm 为基准）</h2>
+          <p>换算比例：1 : 166.67（1 m = 0.6 cm = 6 mm） · 2F 环廊总直径 60.0 cm · 3F 站台长 57.6 cm</p>
+        </div>
+        <button id="btnCloseSpec" style="padding:5px 12px;">关闭</button>
+      </div>
+      <div id="specModalBody" class="spec-modal-body"></div>
+    </div>
+  </div>
 
   <script type="module">
     import * as THREE from 'three';
@@ -443,6 +535,56 @@
     // --- UI Bindings ---
     document.querySelectorAll('[data-cam]').forEach((btn) => {
       btn.addEventListener('click', () => flyTo(btn.dataset.cam));
+    });
+
+    const btnDimOff = document.getElementById('btnDimOff');
+    const btnDimCore = document.getElementById('btnDimCore');
+    const btnDimAll = document.getElementById('btnDimAll');
+    function setDimMode(mode) {
+      hub.state.dimMode = mode;
+      btnDimOff.classList.toggle('active', mode === 'off');
+      btnDimCore.classList.toggle('accent-active', mode === 'core');
+      btnDimAll.classList.toggle('accent-active', mode === 'all');
+      hub.applyState();
+    }
+    btnDimOff.addEventListener('click', () => setDimMode('off'));
+    btnDimCore.addEventListener('click', () => setDimMode('core'));
+    btnDimAll.addEventListener('click', () => setDimMode('all'));
+
+    const specModalBackdrop = document.getElementById('specModalBackdrop');
+    const specModalBody = document.getElementById('specModalBody');
+    function renderSpecTable() {
+      const groups = hub.getDimensionSpecTable();
+      specModalBody.innerHTML = groups.map((g) => `
+        <div>
+          <div class="spec-group-title">${g.group}</div>
+          <table class="spec-table">
+            <thead>
+              <tr><th>构件 / 空间要素</th><th>真实设计尺寸 (m)</th><th>白模制作尺寸 (cm)</th><th>建议板材 / 备注</th></tr>
+            </thead>
+            <tbody>
+              ${g.rows.map((r) => `
+                <tr>
+                  <td>${r[0]}</td>
+                  <td>${r[1]}</td>
+                  <td class="cm-col">${r[2]}</td>
+                  <td>${r[3]}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `).join('');
+    }
+    renderSpecTable();
+
+    function toggleSpecModal(open) {
+      specModalBackdrop.classList.toggle('open', open);
+    }
+    document.getElementById('btnOpenSpec').addEventListener('click', () => toggleSpecModal(true));
+    document.getElementById('btnCloseSpec').addEventListener('click', () => toggleSpecModal(false));
+    specModalBackdrop.addEventListener('click', (e) => {
+      if (e.target === specModalBackdrop) toggleSpecModal(false);
     });
 
     const btnCtxGhost = document.getElementById('btnCtxGhost');
@@ -583,6 +725,7 @@
       setContextMode('ghost');
       setStationVariant('B3');
       setAcoustic('A1');
+      setDimMode('core');
       setSlice('OFF');
       setSection('OFF');
       setColorMode('white');
@@ -625,6 +768,8 @@
       setContextMode,
       setStationVariant,
       setAcoustic,
+      setDimMode,
+      toggleSpecModal,
       setSlice,
       setColorMode,
       setSection,
